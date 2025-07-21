@@ -8,8 +8,9 @@ const session = require('express-session');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+require('dotenv').config();
 // MongoDB connection
-const uri = "mongodb://localhost:27017";
+const uri = `mongodb+srv://vamsivardhan25:${process.env.DB_PASSWORD}@cluster0.woezb.mongodb.net/pokemonDB?retryWrites=true&w=majority&appName=Cluster0`;
 const client = new MongoClient(uri);
 let db;
 
