@@ -1,0 +1,50 @@
+/* 3D Card Tilt Effect */
+.pokemon-card {
+    transform-style: preserve-3d;
+    transform: perspective(1000px) rotateX(0deg) rotateY(0deg);
+    /* Increase transition duration for smoother return to default position */
+    transition: transform 0.3s ease-out;
+    will-change: transform;
+}
+
+.pokemon-card:hover {
+    /* Add a slight scale effect on hover, but no rotation here */
+    transform: perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1.03) translateY(-15px);
+    /* The actual rotation will be handled by JavaScript */
+}
+
+/* Ensure the card returns to original position when not hovered */
+.pokemon-card:not(:hover) {
+    transform: perspective(1000px) rotateX(0deg) rotateY(0deg) !important;
+}
+
+.pokemon-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 60%);
+    pointer-events: none;
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.pokemon-card.tilting::after {
+    opacity: 1;
+}
+
+.pokemon-card .pokemon-image,
+.pokemon-card .pokemon-name,
+.pokemon-card .pokemon-id,
+.pokemon-card .pokemon-types,
+.pokemon-card .rarity-badge {
+    transform: translateZ(20px);
+    pointer-events: none;
+}
+
+.pokemon-card .tooltip {
+    pointer-events: none;
+}

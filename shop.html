@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop</title>
+    <script src="script.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="shopModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeShopModal()">&times;</span>
+            <h2>Shop</h2>
+            <div class="shop-items">
+                <div class="shop-item">
+                    <img src="PokeCoin.webp" alt="Coins">
+                    <span>150 Coins</span>
+                    <button onclick="buyCoins(150)">Buy</button>
+                </div>
+                <div class="shop-item">
+                    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" alt="Poké Ball">
+                    <span>10 Poké Balls - 1500 Coins</span>
+                    <button onclick="buyPokeball('pokeball', 1500)">Buy</button>
+                </div>
+                <div class="shop-item">
+                    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/great-ball.png" alt="Great Ball">
+                    <span>5 Great Balls - 2500 Coins</span>
+                    <button onclick="buyPokeball('greatball', 2500)">Buy</button>
+                </div>
+                <div class="shop-item">
+                    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ultra-ball.png" alt="Ultra Ball">
+                    <span>Ultra Balls - 1500 Coins</span>
+                    <button onclick="buyPokeball('ultraball', 1500)">Buy</button>
+                </div>
+                <div class="shop-item">
+                    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/master-ball.png" alt="Master Ball">
+                    <span>1 Master Ball - 10000 Coins</span>
+                    <button onclick="buyPokeball('masterball', 10000)">Buy</button>
+                </div>
+            </div>
+            <div class="coins-display">
+                <img src="PokeCoin.webp" alt="Coins" class="coins-icon">
+                <span id="userCoins">500</span> coins
+</html>

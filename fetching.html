@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokemon Summoner</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="card-tilt.css">
+</head>
+<body>
+    <div id="authContainer" style="margin-bottom: 20px;">
+        <div id="loginForm">
+            <h3>Login</h3>
+            <input type="text" id="loginUsername" placeholder="Username" />
+            <input type="password" id="loginPassword" placeholder="Password" />
+            <button onclick="login()">Login</button>
+            <p>Don't have an account? <button onclick="showRegister()">Register</button></p>
+        </div>
+        
+        <div id="registerForm" style="display: none;">
+            <h3>Register</h3>
+            <input type="text" id="registerUsername" placeholder="Username" />
+            <input type="password" id="registerPassword" placeholder="Password" />
+            <button onclick="register()">Register</button>
+            <p>Already have an account? <button onclick="showLogin()">Login</button></p>
+        </div>
+    </div>
+
+    <div id="gameContainer" style="display: none;">
+        <div id="userInfo" style="display:none; margin-bottom: 20px;">
+            <span>Logged in as: <strong id="currentUser"></strong></span>
+        </div>
+        <div class="coins-display">
+            <img src="PokeCoin.webp" alt="Coins" class="coins-icon">
+            <span id="userCoins">500</span> coins
+        </div>
+        
+        <!-- Add Pokéballs inventory -->
+        <div class="pokeballs-inventory">
+            <div class="pokeball-item" onclick="selectPokeball('pokeball')">
+                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" alt="Poké Ball">
+                <span id="pokeball-count">10</span>
+            </div>
+            <div class="pokeball-item" onclick="selectPokeball('greatball')">
+                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/great-ball.png" alt="Great Ball">
+                <span id="greatball-count">5</span>
+            </div>
+            <div class="pokeball-item" onclick="selectPokeball('ultraball')">
+                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ultra-ball.png" alt="Ultra Ball">
+                <span id="ultraball-count">3</span>
+            </div>
+            <div class="pokeball-item" onclick="selectPokeball('masterball')">
+                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/master-ball.png" alt="Master Ball">
+                <span id="masterball-count">1</span>
+            </div>
+        </div>
+
+        <div class="container">
+            <h1>🎮 Pokemon Summoner</h1>
+            <div class="controls">
+                <button id="summonBtn" onclick="getPokemonImage()">Summon Pokemon</button>
+                <button id="loadBtn" onclick="loadSavedPokemon()">Load Saved</button>
+                <button id="shopBtn" onclick="openShopModal()">Shop</button>
+                <button id="clearBtn" onclick="clearAllPokemon()">Clear All</button>
+                <button id="toggleDisplayBtn" onclick="togglePokemonDisplay()">Hide Pokemon</button>
+                <button id="logOut" onclick="logout()">Logout</button>
+            </div>
+            <div class="sort-controls">
+                <label for="sortSelect">Sort by:</label>
+                <select id="sortSelect" class="sort-select">
+                    <option value="id">ID (Default)</option>
+                    <option value="name">Name</option>
+                    <option value="rarity">Rarity</option>
+                </select>
+            </div>
+            <div id="loading" class="loading hidden">Summoning Pokemon...</div>
+            <div id="pokemonContainer" class="pokemon-container"></div>
+        </div>
+    </div>
+
+    <!-- Shop Modal -->
+    <div id="shopModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Poké Ball Shop</h2>
+                <span class="close-modal" onclick="closeShopModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="shop-item">
+                    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" alt="Poké Ball">
+                    <div class="shop-item-details">
+                        <h3>Poké Ball</h3>
+                        <p>Standard ball for catching Pokémon.</p>
+                        <p class="shop-price">150 <img src="PokeCoin.webp" alt="coins" class="shop-coin"></p>
+                    </div>
+                    <button onclick="buyPokeball('pokeball', 150)">Buy</button>
+                </div>
+                <div class="shop-item">
+                    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/great-ball.png" alt="Great Ball">
+                    <div class="shop-item-details">
+                        <h3>Great Ball</h3>
+                        <p>Better than a standard Poké Ball.</p>
+                        <p class="shop-price">500 <img src="PokeCoin.webp" alt="coins" class="shop-coin"></p>
+                    </div>
+                    <button onclick="buyPokeball('greatball', 500)">Buy</button>
+                </div>
+                <div class="shop-item">
+                    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ultra-ball.png" alt="Ultra Ball">
+                    <div class="shop-item-details">
+                        <h3>Ultra Ball</h3>
+                        <p>High-performance ball with higher catch rate.</p>
+                        <p class="shop-price">1500 <img src="PokeCoin.webp" alt="coins" class="shop-coin"></p>
+                    </div>
+                    <button onclick="buyPokeball('ultraball', 1500)">Buy</button>
+                </div>
+                <div class="shop-item">
+                    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/master-ball.png" alt="Master Ball">
+                    <div class="shop-item-details">
+                        <h3>Master Ball</h3>
+                        <p>The best ball with a 100% catch rate.</p>
+                        <p class="shop-price">10000 <img src="PokeCoin.webp" alt="coins" class="shop-coin"></p>
+                    </div>
+                    <button onclick="buyPokeball('masterball', 10000)">Buy</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
