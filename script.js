@@ -57,6 +57,8 @@ const captureRates = {
 };
 
 
+
+
 // Function to determine Pokemon rarity
 function getPokemonRarity(id) {
     if (mythicalPokemon.includes(id)) return 'mythical';
@@ -70,7 +72,7 @@ function getPokemonRarity(id) {
 function getRarityValue(rarity) {
     switch(rarity) {
         case 'mythical': return 5;
-        case 'legendary': return 4;
+        case 'legurn endary': ret4;
         case 'ultra-beast': return 3;
         case 'rare': return 2;
         default: return 1;
@@ -671,11 +673,56 @@ const loadSavedPokemon = async () => {
             existingCatchContainer.remove();
         }
         
-        sortPokemon('id'); // Auto-sort by rarity after loading saved Pokemon
+        sortPokemon('id'); 
     } catch (error) {
         console.error('Error loading saved Pokemon:', error);
     }
+   
 }
+
+const Buddy = async () => {
+    try {
+        await loadSavedPokemon();
+        const loaded = document.querySelectorAll('.pokemon-card');
+        let buddyCard = null; // currently selected buddy card
+
+        loaded.forEach(card => {
+            card.addEventListener('click', () => {
+                const name = card.querySelector('.pokemon-name').textContent;
+
+                // If clicked card is already the buddy, unset it
+                if (buddyCard === card) {
+                    card.classList.remove('buddy-selected');
+                    buddyCard = null;
+                    alert(`${name} is no longer your buddy!`);
+                    console.log('Buddy removed');
+                    return;
+                }
+
+                // Remove buddy-selected from any previously selected buddy
+                if (buddyCard) {
+                    buddyCard.classList.remove('buddy-selected');
+                }
+
+                // Remove buddy-selected from all cards to enforce single buddy
+                loaded.forEach(c => c.classList.remove('buddy-selected'));
+
+                // Set the new buddy
+                buddyCard = card;
+                card.classList.add('buddy-selected');
+                alert(`You have selected ${name} as your buddy!`);
+                console.log('Buddy selected:', name);
+            });
+        });
+
+    } catch (error) {
+        console.error('Error loading saved Pokemon:', error);
+    }
+};
+
+
+
+
 
 // Shop functions
 function openShopModal() {
