@@ -23,39 +23,39 @@ const rarePokemon = [
     149, 248, 373, 376, 445, 635, 706, 784, 887
 ];
 
-// Capture chances based on pokemon rarity and ball type
 const captureRates = {
     common: {
-        pokeball: 0.7,    // 70% chance
-        greatball: 0.85,  // 85% chance
-        ultraball: 0.95,  // 95% chance
-        masterball: 1.0   // 100% chance
-    },
-    rare: {
-        pokeball: 0.4,    // 40% chance
-        greatball: 0.6,   // 60% chance
+        pokeball: 0.5,    // 50% chance
+        greatball: 0.65,  // 65% chance
         ultraball: 0.8,   // 80% chance
         masterball: 1.0   // 100% chance
     },
+    rare: {
+        pokeball: 0.25,   // 25% chance
+        greatball: 0.45,  // 45% chance
+        ultraball: 0.65,  // 65% chance
+        masterball: 1.0   // 100% chance
+    },
     legendary: {
-        pokeball: 0.1,    // 10% chance
-        greatball: 0.3,   // 30% chance
-        ultraball: 0.5,   // 50% chance
+        pokeball: 0.08,   // 8% chance
+        greatball: 0.18,  // 18% chance
+        ultraball: 0.3,   // 30% chance
         masterball: 1.0   // 100% chance
     },
     mythical: {
         pokeball: 0.05,   // 5% chance
-        greatball: 0.15,  // 15% chance
-        ultraball: 0.3,   // 30% chance
+        greatball: 0.12,  // 12% chance
+        ultraball: 0.25,  // 25% chance
         masterball: 1.0   // 100% chance
     },
     'ultra-beast': {
         pokeball: 0.05,   // 5% chance
-        greatball: 0.2,   // 20% chance
-        ultraball: 0.4,   // 40% chance
+        greatball: 0.15,  // 15% chance
+        ultraball: 0.3,   // 30% chance
         masterball: 1.0   // 100% chance
     }
 };
+
 
 // Function to determine Pokemon rarity
 function getPokemonRarity(id) {
@@ -93,8 +93,28 @@ const getPokemonImage = async () => {
     summonBtn.disabled = true;
     
     try {
-        let i = Math.floor(Math.random() * 1000) + 1;
-        
+        const roll = Math.random() * 100;
+        let i;
+
+        if (roll < 0.1) {
+            const idx = ultraBeasts[Math.floor(Math.random() * ultraBeasts.length)];
+            i = idx;
+        } else if (roll < 0.15) {
+            const idx = mythicalPokemon[Math.floor(Math.random() * mythicalPokemon.length)];
+            i = idx;
+        } else if (roll < 0.16) {
+            const idx = legendaryPokemon[Math.floor(Math.random() * legendaryPokemon.length)];
+            i = idx;
+        } else {
+            do {
+                i = Math.floor(Math.random() * 1000) + 1;
+            } while (
+                legendaryPokemon.includes(i) || 
+                mythicalPokemon.includes(i) || 
+                ultraBeasts.includes(i)
+            );
+        }
+
         // Fetch Pokemon data from PokeAPI
         const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${i}`);
         const pokemonData = await response.json();
@@ -190,8 +210,8 @@ const getPokemonImage = async () => {
         loading.classList.add('hidden');
         summonBtn.disabled = false;
     }
-}
 
+}
 // Function to create a Pokemon card from database data
 function createPokemonCardFromDB(pokemon) {
     // Debug log to see what we're getting from the database
