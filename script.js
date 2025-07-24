@@ -72,7 +72,7 @@ function getPokemonRarity(id) {
 function getRarityValue(rarity) {
     switch(rarity) {
         case 'mythical': return 5;
-        case 'legurn endary': ret4;
+        case 'legendary': return 4;
         case 'ultra-beast': return 3;
         case 'rare': return 2;
         default: return 1;
@@ -484,6 +484,7 @@ const savePokemonToDB = async (pokemonInfo) => {
                 rarity: pokemonInfo.rarity // Include rarity
             })
         });
+        // getting coins is already implemented 
         
         const result = await response.json();
         
@@ -654,6 +655,8 @@ function togglePokemonDisplay() {
 // Function to load saved Pokemon from database
 const loadSavedPokemon = async () => {
     try {
+        const sortfunction = document.getElementsByClassName('sort-controls')[0];
+        sortfunction.style.visibility = 'visible'; // Hide sort function when viewing collection
         const response = await fetch('/api/get-pokemon');
         const savedPokemon = await response.json();
         
@@ -680,17 +683,19 @@ const loadSavedPokemon = async () => {
    
 }
 
+//Manav
+//Buddy System use class "buddy-selected" to mark the buddy
 const Buddy = async () => {
     try {
         await loadSavedPokemon();
         const loaded = document.querySelectorAll('.pokemon-card');
-        let buddyCard = null; // currently selected buddy card
+        let buddyCard = null; 
 
         loaded.forEach(card => {
             card.addEventListener('click', () => {
                 const name = card.querySelector('.pokemon-name').textContent;
 
-                // If clicked card is already the buddy, unset it
+               
                 if (buddyCard === card) {
                     card.classList.remove('buddy-selected');
                     buddyCard = null;
@@ -699,15 +704,15 @@ const Buddy = async () => {
                     return;
                 }
 
-                // Remove buddy-selected from any previously selected buddy
+              
                 if (buddyCard) {
                     buddyCard.classList.remove('buddy-selected');
                 }
 
-                // Remove buddy-selected from all cards to enforce single buddy
+                
                 loaded.forEach(c => c.classList.remove('buddy-selected'));
 
-                // Set the new buddy
+              
                 buddyCard = card;
                 card.classList.add('buddy-selected');
                 alert(`You have selected ${name} as your buddy!`);
