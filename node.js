@@ -123,7 +123,7 @@ function requireAuth(req, res, next) {
 // Modified API endpoint to save Pokemon data with rarity
 app.post('/api/save-pokemon', requireAuth, async (req, res) => {
     try {
-        const { pokemonName, pokemonImage, pokemonId, pokemonTypes, rarity } = req.body;
+        const { pokemonName, pokemonImage, pokemonId, pokemonTypes, rarity} = req.body;
         
         const pokemonData = {
             userId: req.session.userId, // Associate Pokemon with user

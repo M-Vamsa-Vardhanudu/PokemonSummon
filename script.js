@@ -104,6 +104,8 @@ const captureRates = {
 };
 
 
+
+
 // Function to determine Pokemon rarity
 function getPokemonRarity(id) {
     if (mythicalPokemon.includes(id)) return 'mythical';
@@ -566,6 +568,7 @@ const savePokemonToDB = async (pokemonInfo) => {
                 rarity: pokemonInfo.rarity // Include rarity
             })
         });
+        // getting coins is already implemented 
         
         const result = await response.json();
         
@@ -736,6 +739,8 @@ function togglePokemonDisplay() {
 // Function to load saved Pokemon from database
 const loadSavedPokemon = async () => {
     try {
+        const sortfunction = document.getElementsByClassName('sort-controls')[0];
+        sortfunction.style.visibility = 'visible'; // Hide sort function when viewing collection
         const response = await fetch('/api/get-pokemon');
         const savedPokemon = await response.json();
         
@@ -755,11 +760,58 @@ const loadSavedPokemon = async () => {
             existingCatchContainer.remove();
         }
         
-        sortPokemon('id'); // Auto-sort by rarity after loading saved Pokemon
+        sortPokemon('id'); 
     } catch (error) {
         console.error('Error loading saved Pokemon:', error);
     }
+   
 }
+
+//Manav
+//Buddy System use class "buddy-selected" to mark the buddy
+const Buddy = async () => {
+    try {
+        await loadSavedPokemon();
+        const loaded = document.querySelectorAll('.pokemon-card');
+        let buddyCard = null; 
+
+        loaded.forEach(card => {
+            card.addEventListener('click', () => {
+                const name = card.querySelector('.pokemon-name').textContent;
+
+               
+                if (buddyCard === card) {
+                    card.classList.remove('buddy-selected');
+                    buddyCard = null;
+                    alert(`${name} is no longer your buddy!`);
+                    console.log('Buddy removed');
+                    return;
+                }
+
+              
+                if (buddyCard) {
+                    buddyCard.classList.remove('buddy-selected');
+                }
+
+                
+                loaded.forEach(c => c.classList.remove('buddy-selected'));
+
+              
+                buddyCard = card;
+                card.classList.add('buddy-selected');
+                alert(`You have selected ${name} as your buddy!`);
+                console.log('Buddy selected:', name);
+            });
+        });
+
+    } catch (error) {
+        console.error('Error loading saved Pokemon:', error);
+    }
+};
+
+
+
+
 
 // Shop functions
 function openShopModal() {
