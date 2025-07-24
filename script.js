@@ -12,15 +12,62 @@ let pokeballInventory = {
 let userCoins = 500; // Starting amount
 
 // Define Pokemon rarity tiers
-const legendaryPokemon = [144, 145, 146, 150, 151, 243, 244, 245, 249, 250, 251, 377, 378, 379, 380, 381, 382, 383, 384, 385, 386, 480, 481, 482, 483, 484, 485, 486, 487, 488, 489, 490, 491, 492, 493, 494, 638, 639, 640, 641, 642, 643, 644, 645, 646, 647, 648, 649];
+const legendaryPokemon = [
+  144, 145, 146, 150, // Kanto birds + Mewtwo
+  243, 244, 245,      // Johto beasts
+  249, 250,           // Lugia, Ho-Oh
+  377, 378, 379,      // Regi trio
+  380, 381,           // Latias, Latios
+  382, 383, 384,      // Kyogre, Groudon, Rayquaza
+  480, 481, 482,      // Lake trio
+  483, 484, 485, 486, // Dialga, Palkia, Heatran, Regigigas
+  487, 488,           // Giratina, Cresselia
+  638, 639, 640,      // Cobalion trio
+  641, 642, 645,      // Tornadus, Thundurus, Landorus
+  643, 644, 646,      // Reshiram, Zekrom, Kyurem
+  716, 717, 718,      // Xerneas, Yveltal, Zygarde
+  785, 786, 787, 788, // Tapu guardians
+  891, 892, 894, 895, 896, 897, // Kubfu, Urshifu, Regieleki, Regidrago, Glastrier, Spectrier
+  898                 // Calyrex
+];
 
-const mythicalPokemon = [151, 251, 385, 386, 489, 490, 491, 492, 493, 494, 647, 648, 649];
+const mythicalPokemon = [
+  151, // Mew
+  251, // Celebi
+  385, // Jirachi
+  386, // Deoxys
+  489, 490, // Phione, Manaphy
+  491, 492, 493, // Darkrai, Shaymin, Arceus
+  494, // Victini
+  647, 648, 649, // Keldeo, Meloetta, Genesect
+  719, // Diancie
+  720, // Hoopa
+  721, // Volcanion
+  801, // Magearna
+  802, // Marshadow
+  807, // Zeraora
+  808, 809, // Meltan, Melmetal
+  893, // Zarude
+  1005, 1006, 1007, 1008, // Paradox forms (some may be considered mythical depending on lore)
+  1009, 1010            // Terapagos, etc. (recent additions)
+];
 
-const ultraBeasts = [793, 794, 795, 796, 797, 798, 799, 800, 803, 804, 805, 806];
+const ultraBeasts = [
+  793, 794, 795, 796, 797, 798, 799, 800, // Nihilego to Necrozma
+  803, 804, 805, 806,                     // Poipole to Blacephalon
+  891, 892                               // Kubfu, Urshifu (sometimes debated, but mostly not UB)
+];
 
 const rarePokemon = [
-    // Pseudo-legendaries and other rare Pokémon
-    149, 248, 373, 376, 445, 635, 706, 784, 887
+  149, // Dragonite
+  248, // Tyranitar
+  373, // Salamence
+  376, // Metagross
+  445, // Garchomp
+  635, // Hydreigon
+  706, // Goodra
+  784, // Kommo-o
+  887  // Dragapult
 ];
 
 const captureRates = {
@@ -76,6 +123,46 @@ function getRarityValue(rarity) {
         default: return 1;
     }
 }
+async function openTradeModal() {
+    await loadSavedPokemon();
+    const loadedPokemon = document.querySelectorAll('.pokemon-card');
+    return new Promise(resolve => {
+        loadedPokemon.forEach(card => {
+            card.addEventListener("click", () => {
+                const nameElement = card.querySelector('.pokemon-name');
+                if (nameElement) {
+                    const modal = document.getElementById('tradeConfirmModal');
+                    const text = document.getElementById('tradeConfirmText');
+                    text.textContent = `Do you want to trade ${nameElement.textContent}?`;
+                    modal.classList.remove('hidden');
+                    setTimeout(() => {
+                        modal.classList.add('active');
+                    }, 10);
+
+                    const confirmBtn = document.getElementById('confirmTradeBtn');
+                    const cancelBtn = document.getElementById('cancelTradeBtn');
+                    confirmBtn.onclick = null;
+                    cancelBtn.onclick = null;
+
+                    confirmBtn.onclick = () => {
+                        modal.classList.remove('active');
+                        setTimeout(() => modal.classList.add('hidden'), 300);
+                        resolve(nameElement.textContent);
+                        tradePokemon(nameElement.textContent);
+                    };
+                    cancelBtn.onclick = () => {
+                        modal.classList.remove('active');
+                        setTimeout(() => modal.classList.add('hidden'), 300);
+                    };
+                }
+            });
+        });
+    });
+}
+
+const tradePokemon = async (pokemonName) => {
+    alert("This feature will be implemented soon!");
+}
 
 const getPokemonImage = async () => {
     const loading = document.getElementById('loading');
@@ -95,7 +182,7 @@ const getPokemonImage = async () => {
     try {
         const roll = Math.random() * 100;
         let i;
-
+        
         if (roll < 0.1) {
             const idx = ultraBeasts[Math.floor(Math.random() * ultraBeasts.length)];
             i = idx;
@@ -114,7 +201,6 @@ const getPokemonImage = async () => {
                 ultraBeasts.includes(i)
             );
         }
-
         // Fetch Pokemon data from PokeAPI
         const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${i}`);
         const pokemonData = await response.json();
@@ -199,7 +285,7 @@ const getPokemonImage = async () => {
         console.error('Error fetching Pokemon:', error);
         // Fallback to original method
         const img = document.createElement('img');
-        let i = Math.floor(Math.random() * 1000) + 1;
+        let i = Math.floor(Math.random() * 1025) + 1;
         img.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${i}.png`;
         img.alt = `Pokemon ${i}`;
         img.className = 'pokemon-image';
@@ -426,8 +512,6 @@ function attemptCatch() {
         } else {
             catchFailure();
             
-            // Reset selected pokeball after failure
-            // This forces user to select a ball again, ensuring a fresh roll
             selectedPokeball = null;
             
             // Remove selected class from all pokeballs
