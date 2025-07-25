@@ -136,6 +136,78 @@ async function openTradeModal() {
                     const modal = document.getElementById('tradeConfirmModal');
                     const text = document.getElementById('tradeConfirmText');
                     text.textContent = `Do you want to trade ${nameElement.textContent}?`;
+                    console.log(card);
+                    modal.classList.remove('hidden');
+                    setTimeout(() => {
+                        modal.classList.add('active');
+                    }, 10);
+
+                    const confirmBtn = document.getElementById('confirmTradeBtn');
+                    const cancelBtn = document.getElementById('cancelTradeBtn');
+                    confirmBtn.onclick = null;
+                    cancelBtn.onclick = null;
+
+                    confirmBtn.onclick = () => {
+                        modal.classList.remove('active');
+                        setTimeout(() => modal.classList.add('hidden'), 300);
+                        resolve(nameElement.textContent);
+                        console.log(card);
+                        tradePokemon(card);
+                    };
+                    cancelBtn.onclick = () => {
+                        modal.classList.remove('active');
+                        setTimeout(() => modal.classList.add('hidden'), 300);
+                    };
+                }
+            });
+        });
+    });
+}
+
+const tradePokemon = async (pokemonCard) => {
+    const pokemon = pokemonCard;
+    const idelm = pokemonCard.querySelector('.pokemon-id');
+    let idText = null;
+    if ( !idelm){
+        console.log("No pokemon id found in card" + pokemonCard + " " + pokemon);
+        return;
+    }
+    else {
+        idText = idelm.textContent; // ← this is "#080"
+        idText = idText.replace("#" , "");
+        console.log('Pokemon ID:', idText );
+
+        console.log(`/api/trade-pokemon/${idText}`);
+
+    }
+    const response = await fetch(`/api/trade-pokemon/${idText}`, {
+        method: 'DELETE'
+    });
+
+    const result = await response.json();
+    if ( result.success ){
+        pokemon.style.animation = 'fadeOut 0.5s';
+
+        setTimeout(()=>{
+            pokemon.remove();
+        } , 500);
+    }
+    else{
+        console.log("error trading pokemon");
+    }
+}
+
+async function openMarketModal(){
+    await loadSavedPokemon();
+    const loadedPokemon = document.querySelectorAll('.pokemon-card');
+    return new Promise(resolve => {
+        loadedPokemon.forEach(card => {
+            card.addEventListener("click", () => {
+                const nameElement = card.querySelector('.pokemon-name');
+                if (nameElement) {
+                    const modal = document.getElementById('marketConfirmModal');
+                    const text = document.getElementById('marketConfirmText');
+                    text.textContent = `Do you want to sell ${nameElement.textContent}?`;
                     modal.classList.remove('hidden');
                     setTimeout(() => {
                         modal.classList.add('active');
@@ -161,11 +233,6 @@ async function openTradeModal() {
         });
     });
 }
-
-const tradePokemon = async (pokemonName) => {
-    alert("This feature will be implemented soon!");
-}
-
 const getPokemonImage = async () => {
     const loading = document.getElementById('loading');
     const container = document.getElementById('pokemonContainer');
