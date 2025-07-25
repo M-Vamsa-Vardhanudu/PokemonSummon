@@ -9,7 +9,68 @@ let pokeballInventory = {
 };
 
 // Global variable for user coins
-let userCoins = 500; // Starting amount
+// let userCoins = 500; // Starting amount
+
+// let loadCoins = loadCoins();
+
+async function loadCoins() {
+    try {
+        const response = await fetch('/api/coins');
+        if (!response.ok) {
+            throw new Error(`Failed to fetch coins: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        userCoins = data.coins || 0; // Update the global `userCoins` variable
+        updateCoinsDisplay(); // Update the UI with the fetched coins
+    } catch (error) {
+        console.error('Error loading coins:', error);
+        userCoins = -100; // Default to 0 coins if the request fails
+        updateCoinsDisplay();
+    }
+}
+
+async function updateCoinsInDB(newCoins) {
+    console.log('Updating coins in DB:', newCoins);
+    try {
+        const response = await fetch('/api/update-coins', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ coins: newCoins }),
+            
+            credentials: 'include' // Include credentials for session management
+        });
+
+        const data = await response.json();
+        if (!data.success) {
+            console.error('Failed to update coins in DB:', data.message);
+        }
+    } catch (error) {
+        console.error('Error updating coins in DB:', error);
+    }
+}
+
+function buyPokeball(ballType, price) {
+    
+    if (userCoins >= price) {
+        // Deduct coins
+        userCoins -= price;
+        updateCoinsDisplay();
+        updateCoinsInDB(userCoins); // Save the updated coins value in MongoDB
+
+        // Add to inventory
+        pokeballInventory[ballType]++;
+        updateBallCounts();
+
+        // Show success message
+        showNotification(`Successfully purchased 1 ${formatBallName(ballType)}!`, 'success');
+    } else {
+        // Show insufficient funds message
+        showNotification(`Not enough coins! You need ${price - userCoins} more coins.`, 'error');
+    }
+}
+
+
 
 // Define Pokemon rarity tiers
 const legendaryPokemon = [144, 145, 146, 150, 151, 243, 244, 245, 249, 250, 251, 377, 378, 379, 380, 381, 382, 383, 384, 385, 386, 480, 481, 482, 483, 484, 485, 486, 487, 488, 489, 490, 491, 492, 493, 494, 638, 639, 640, 641, 642, 643, 644, 645, 646, 647, 648, 649];
@@ -746,23 +807,23 @@ function closeShopModal() {
     }, 300);
 }
 
-function buyPokeball(ballType, price) {
-    if (userCoins >= price) {
-        // Deduct coins
-        userCoins -= price;
-        updateCoinsDisplay();
+// function buyPokeball(ballType, price) {
+//     if (userCoins >= price) {
+//         // Deduct coins
+//         userCoins -= price;
+//         updateCoinsDisplay();
         
-        // Add to inventory
-        pokeballInventory[ballType]++;
-        updateBallCounts();
+//         // Add to inventory
+//         pokeballInventory[ballType]++;
+//         updateBallCounts();
         
-        // Show success message
-        showNotification(`Successfully purchased 1 ${formatBallName(ballType)}!`, 'success');
-    } else {
-        // Show insufficient funds message
-        showNotification(`Not enough coins! You need ${price - userCoins} more coins.`, 'error');
-    }
-}
+//         // Show success message
+//         showNotification(`Successfully purchased 1 ${formatBallName(ballType)}!`, 'success');
+//     } else {
+//         // Show insufficient funds message
+//         showNotification(`Not enough coins! You need ${price - userCoins} more coins.`, 'error');
+//     }
+// }
 
 function showNotification(message, type) {
     // Create notification element if it doesn't exist
@@ -797,8 +858,8 @@ function updateCoinsDisplay() {
 // Function to award coins based on Pokemon rarity
 function awardCoinsForCatch(rarity) {
     let coinsEarned;
-    
-    switch(rarity) {
+
+    switch (rarity) {
         case 'mythical':
             coinsEarned = Math.floor(Math.random() * (1000 - 800 + 1)) + 800;
             break;
@@ -814,10 +875,11 @@ function awardCoinsForCatch(rarity) {
         default: // common
             coinsEarned = Math.floor(Math.random() * (230 - 120 + 1)) + 120;
     }
-    
+
     userCoins += coinsEarned;
     updateCoinsDisplay();
-    
+    updateCoinsInDB(userCoins); // Save the updated coins value in MongoDB
+
     return coinsEarned;
 }
 
@@ -902,39 +964,19 @@ function clearAllPokemon() {
 }
 
 // Initialize event listeners when document loads
-document.addEventListener('DOMContentLoaded', function() {
-    // Check auth and initialize pokeball inventory
-    checkAuth();
+document.addEventListener('DOMContentLoaded', async function () {
+    try {
+        await checkAuth();         // Wait for authentication check
+        await loadCoins();         // Only then load coins
+    } catch (error) {
+        console.error("User not authenticated:", error);
+        window.location.href = '/login';  // or your login page
+    }
+
     updateBallCounts();
-    updateCoinsDisplay(); // Add this line
-    
-    // Initialize the display state
-    const pokemonContainer = document.getElementById('pokemonContainer');
-    const toggleBtn = document.getElementById('toggleDisplayBtn');
-    if (pokemonContainer && toggleBtn) {
-        pokemonContainer.style.display = 'grid';
-        toggleBtn.textContent = 'Hide Pokemon';
-    }
-    
-    // Initialize sort selector
-    const sortSelect = document.getElementById('sortSelect');
-    if (sortSelect) {
-        sortSelect.addEventListener('change', function() {
-            sortPokemon(this.value);
-        });
-    }
-    
-    // Close shop modal when clicking outside
-    window.addEventListener('click', function(event) {
-        const modal = document.getElementById('shopModal');
-        if (event.target === modal) {
-            closeShopModal();
-        }
-    });
-    
-    // Add event delegation for 3D card tilt effect
     initCardTiltEffect();
 });
+
 
 // 3D Card Tilt Effect
 function initCardTiltEffect() {
