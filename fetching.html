@@ -35,6 +35,31 @@
             <span id="userCoins">500</span> coins
         </div>
         
+        
+        <div class="container">
+            <h1>🎮 Pokemon Summoner</h1>
+            <div class="controls">
+                <button id="summonBtn" onclick="getPokemonImage()">Summon Pokemon</button>
+                <button id="loadBtn" onclick="loadSavedPokemon()">Load Saved</button>
+                <button id="shopBtn" onclick="openShopModal()">Shop</button>
+                <!-- <button id="clearBtn" onclick="clearAllPokemon()">Clear All</button> -->
+                <!-- <button id="toggleDisplayBtn" onclick="togglePokemonDisplay()">Hide Pokemon</button> -->
+                <button id="tradePokemon" onclick="openTradeModal()">Trade</button>
+                <button id="marketPokemon" onclick="openMarketModal()">Market</button>
+                <button id="buddy" onclick="Buddy()">Buddy</button>
+                <button id="logOut" onclick="logout()">Logout</button>
+            </div>
+            <div class="sort-controls">
+                <label for="sortSelect">Sort by:</label>
+                <select id="sortSelect" class="sort-select">
+                    <option value="id">ID (Default)</option>
+                    <option value="name">Name</option>
+                    <option value="rarity">Rarity</option>
+                </select>
+            </div>
+            <div id="loading" class="loading hidden">Summoning Pokemon...</div>
+            <div id="pokemonContainer" class="pokemon-container"></div>
+        </div>
         <!-- Add Pokéballs inventory -->
         <div class="pokeballs-inventory">
             <div class="pokeball-item" onclick="selectPokeball('pokeball')">
@@ -55,29 +80,9 @@
             </div>
         </div>
 
-        <div class="container">
-            <h1>🎮 Pokemon Summoner</h1>
-            <div class="controls">
-                <button id="summonBtn" onclick="getPokemonImage()">Summon Pokemon</button>
-                <button id="loadBtn" onclick="loadSavedPokemon()">Load Saved</button>
-                <button id="shopBtn" onclick="openShopModal()">Shop</button>
-                <button id="clearBtn" onclick="clearAllPokemon()">Clear All</button>
-                <button id="toggleDisplayBtn" onclick="togglePokemonDisplay()">Hide Pokemon</button>
-                <button id="Buddy" onclick="Buddy()">Pokemon Buddy</button>
-                <button id="logOut" onclick="logout()">Logout</button>
-            </div>
-            <div class="sort-controls" style="visibility: hidden;">
-                <label for="sortSelect">Sort by:</label>
-                <select id="sortSelect" class="sort-select">
-                    <option value="id">ID (Default)</option>
-                    <option value="name">Name</option>
-                    <option value="rarity">Rarity</option>
-                </select>
-            </div>
-            <div id="loading" class="loading hidden">Summoning Pokemon...</div>
-            <div id="pokemonContainer" class="pokemon-container"></div>
-        </div>
     </div>
+
+    <script src="script.js"></script>
 
     <!-- Shop Modal -->
     <div id="shopModal" class="modal hidden">
@@ -126,7 +131,13 @@
             </div>
         </div>
     </div>
-
-    <script src="script.js"></script>
+</div>
+<div id="tradeConfirmModal" class="modal hidden">
+    <div class="modal-content">
+        <h2>Trade Pokémon</h2>
+        <p id="tradeConfirmText"></p>
+        <button id="confirmTradeBtn" onclick="removePokemon()">Yes, Trade</button>
+        <button id="cancelTradeBtn">Cancel</button>
+    </div>
 </body>
 </html>

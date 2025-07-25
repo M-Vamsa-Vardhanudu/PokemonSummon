@@ -1,6 +1,5 @@
 const express = require('express');
-const { ObjectId } = require('mongodb');
-const { MongoClient } = require('mongodb');
+const { MongoClient , ObjectId } = require('mongodb');
 const cors = require('cors');
 const path = require('path');
 const bcrypt = require('bcryptjs');
@@ -233,4 +232,31 @@ app.get('/', (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
+});
+
+app.delete('/api/trade-pokemon/:id', requireAuth, async(req, res) => {
+    try {
+        const pokemonId = parseInt(req.params.id , 10);
+        console.log("Trading Pokemon with ID:", pokemonId);
+        
+        // Check if the ID is a valid ObjectId format
+        // if (!ObjectId.isValid(pokemonId)) {
+        //     return res.status(400).json({ success: false, message: "Invalid Pokemon ID format" });
+        // }
+        
+        const result = await db.collection('pokemonCollection').deleteOne({
+            id: pokemonId,
+            userId: req.session.userId
+        });
+        
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ success: false, message: "Pokemon not found or not owned by user" });
+        }
+        
+        res.json({ success: true, message: "Pokemon traded successfully" });
+    }
+    catch(error) {
+        console.error("Error trading Pokemon:", error);
+        res.status(500).json({ success: false, error: "Failed to trade Pokemon" });
+    }
 });
