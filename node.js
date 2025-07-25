@@ -245,3 +245,47 @@ app.delete('/api/trade-pokemon/:id', requireAuth, async(req, res) => {
         res.status(500).json({ success: false, error: "Failed to trade Pokemon" });
     }
 });
+
+app.put('/api/market-pokemon/:id', requireAuth, async(req, res) => {
+    try {
+        const pokemonId = parseInt(req.params.id, 10);
+        console.log("Putting Pokemon in market with ID:", pokemonId);
+        
+        // First, retrieve the complete Pokemon data
+        const pokemonData = await db.collection('pokemonCollection').findOne({
+            id: pokemonId,
+            userId: req.session.userId
+        });
+        
+        if (!pokemonData) {
+            return res.status(404).json({ 
+                success: false, 
+                message: "Pokemon not found or not owned by user" 
+            });
+        }
+        
+        // Now delete it from the user's collection
+        const deleteResult = await db.collection('pokemonCollection').deleteOne({
+            id: pokemonId,
+            userId: req.session.userId
+        });
+        
+        // Insert the complete Pokemon data into the market collection
+        const marketResult = await db.collection('marketCollection').insertOne({
+            ...pokemonData,
+            listedAt: new Date()
+        });
+
+        res.json({ 
+            success: true, 
+            message: "Pokemon sent to market successfully" 
+        });
+    }
+    catch(error) {
+        console.error("Error putting Pokemon in market:", error);
+        res.status(500).json({ 
+            success: false, 
+            error: "Failed to put Pokemon in market" 
+        });
+    }
+});

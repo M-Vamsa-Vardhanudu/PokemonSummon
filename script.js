@@ -200,39 +200,87 @@ const tradePokemon = async (pokemonCard) => {
 async function openMarketModal(){
     await loadSavedPokemon();
     const loadedPokemon = document.querySelectorAll('.pokemon-card');
-    return new Promise(resolve => {
-        loadedPokemon.forEach(card => {
-            card.addEventListener("click", () => {
-                const nameElement = card.querySelector('.pokemon-name');
-                if (nameElement) {
-                    const modal = document.getElementById('marketConfirmModal');
-                    const text = document.getElementById('marketConfirmText');
-                    text.textContent = `Do you want to sell ${nameElement.textContent}?`;
-                    modal.classList.remove('hidden');
-                    setTimeout(() => {
-                        modal.classList.add('active');
-                    }, 10);
+    
+    // Remove any existing click handlers to prevent duplicates
+    loadedPokemon.forEach(card => {
+        const clone = card.cloneNode(true);
+        card.parentNode.replaceChild(clone, card);
+    });
+    
+    // Get fresh references after cloning
+    const freshLoadedPokemon = document.querySelectorAll('.pokemon-card');
+    
+    freshLoadedPokemon.forEach(card => {
+        card.addEventListener("click", () => {
+            const nameElement = card.querySelector('.pokemon-name');
+            if (nameElement) {
+                const modal = document.getElementById('marketConfirmModal');
+                const text = document.getElementById('marketConfirmText');
+                text.textContent = `Do you want to put ${nameElement.textContent} to market?`;
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    modal.classList.add('active');
+                }, 10);
 
-                    const confirmBtn = document.getElementById('confirmTradeBtn');
-                    const cancelBtn = document.getElementById('cancelTradeBtn');
-                    confirmBtn.onclick = null;
-                    cancelBtn.onclick = null;
+                const confirmBtn = document.getElementById('confirmMarketBtn');
+                const cancelBtn = document.getElementById('cancelMarketBtn'); // Updated selector
+                confirmBtn.onclick = null;
+                cancelBtn.onclick = null;
 
-                    confirmBtn.onclick = () => {
-                        modal.classList.remove('active');
-                        setTimeout(() => modal.classList.add('hidden'), 300);
-                        resolve(nameElement.textContent);
-                        tradePokemon(nameElement.textContent);
-                    };
-                    cancelBtn.onclick = () => {
-                        modal.classList.remove('active');
-                        setTimeout(() => modal.classList.add('hidden'), 300);
-                    };
-                }
-            });
+                confirmBtn.onclick = async () => {
+                    await putPokemonInMarket(card);
+                    modal.classList.remove('active');
+                    setTimeout(() => modal.classList.add('hidden'), 300);
+                };
+                
+                cancelBtn.onclick = () => {
+                    modal.classList.remove('active');
+                    setTimeout(() => modal.classList.add('hidden'), 300);
+                };
+            }
         });
     });
 }
+const putPokemonInMarket = async (pokemonCard) => {
+    const pokemon = pokemonCard;
+    const idelm = pokemonCard.querySelector('.pokemon-id');
+    let idText = null;
+    if (!idelm) {
+        console.log("No pokemon id found in card", pokemonCard);
+        return;
+    }
+    else {
+        idText = idelm.textContent; // ← this is "#080"
+        idText = idText.replace("#", "");
+        console.log('Pokemon ID:', idText);
+        console.log(`Sending request to: /api/market-pokemon/${idText}`);
+    }
+    
+    try {
+        const response = await fetch(`/api/market-pokemon/${idText}`, {
+            method: 'PUT'
+        });
+
+        console.log("Response status:", response.status);
+        const result = await response.json();
+        console.log("API response:", result);
+        
+        if (result.success) {
+            console.log("Successfully put Pokemon in market");
+            pokemon.style.animation = 'fadeOut 0.5s';
+
+            setTimeout(() => {
+                pokemon.remove();
+            }, 500);
+        }
+        else {
+            console.error("Error putting Pokemon in market:", result.message || "Unknown error");
+        }
+    } catch (error) {
+        console.error("Exception occurred while putting Pokemon in market:", error);
+    }
+}
+
 const getPokemonImage = async () => {
     const loading = document.getElementById('loading');
     const container = document.getElementById('pokemonContainer');
