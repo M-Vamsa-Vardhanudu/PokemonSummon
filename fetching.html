@@ -47,6 +47,7 @@
                 <button id="tradePokemon" onclick="openTradeModal()">Trade</button>
                 <button id="marketPokemon" onclick="openMarketModal()">Market</button>
                 <button id="buddy" onclick="Buddy()">Buddy</button>
+                <button id="loadMarketPokemon" onclick="loadMarketPokemon()">Load Market</button>
                 <button id="logOut" onclick="logout()">Logout</button>
             </div>
             <div class="sort-controls">
@@ -132,6 +133,16 @@
         </div>
     </div>
 </div>
+<!-- Change this in fetching.html -->
+<div id="marketConfirmModal" class="modal hidden">
+    <div class="modal-content">
+        <h2>Market Pokemon</h2>
+        <p id="marketConfirmText"></p>
+        <button id="confirmMarketBtn">Market</button>
+        <button id="cancelMarketBtn">Cancel</button> <!-- Changed from cancelTradeBtn -->
+    </div>
+</div>
+
 <div id="tradeConfirmModal" class="modal hidden">
     <div class="modal-content">
         <h2>Trade Pokémon</h2>
@@ -139,15 +150,7 @@
         <button id="confirmTradeBtn" onclick="removePokemon()">Yes, Trade</button>
         <button id="cancelTradeBtn">Cancel</button>
     </div>
-    <!-- Change this in fetching.html -->
-    <div id="marketConfirmModal" class="market hidden">
-        <div class="market-content">
-            <h2>Market Pokemon</h2>
-            <p id="marketConfirmText"></p>
-            <button id="confirmMarketBtn">Market</button>
-            <button id="cancelMarketBtn">Cancel</button> <!-- Changed from cancelTradeBtn -->
-        </div>
-    </div>
-</body>
+</div>
 
+</body>
 </html>

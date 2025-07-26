@@ -169,6 +169,7 @@ app.get('/api/get-pokemon', requireAuth, async (req, res) => {
     }
 });
 
+<<<<<<< HEAD
 
 
 
@@ -191,6 +192,21 @@ app.get('/api/get-pokemon', requireAuth, async (req, res) => {
 
 app.get('/api/coins', requireAuth, async (req, res) => {
     try {
+=======
+app.get('/api/market-pokemon', async (req, res) => {
+    try {
+        const marketPokemon = await db.collection('marketCollection').find().toArray();
+        res.json(marketPokemon);
+    }
+    catch (error) {
+        console.error("Error fetching market Pokemon:", error);
+        res.status(500).json({ error: "Failed to fetch market Pokemon" });
+    }
+});
+
+app.get('/api/coins', requireAuth, async (req, res) => {
+    try {
+>>>>>>> e40a383 (Market css fixed)
         console.log('Session userId:', req.session.userId);
 
         const user = await db.collection('users').findOne({

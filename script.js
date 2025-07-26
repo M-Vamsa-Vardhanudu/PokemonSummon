@@ -30,6 +30,7 @@ async function loadCoins() {
     }
 }
 
+<<<<<<< HEAD
 async function loadbuddy(){
     try{
         const response = await fetch('/api/buddy');
@@ -73,6 +74,8 @@ async function updatebuddyinDB(buddy) {
     }
 }
 
+=======
+>>>>>>> e40a383 (Market css fixed)
 async function updateCoinsInDB(newCoins) {
     console.log('Updating coins in DB:', newCoins);
     try {
@@ -302,14 +305,32 @@ const tradePokemon = async (pokemonCard) => {
 }
 
 async function openMarketModal(){
-    await loadSavedPokemon();
-    const loadedPokemon = document.querySelectorAll('.pokemon-card');
-    
-    // Remove any existing click handlers to prevent duplicates
-    loadedPokemon.forEach(card => {
-        const clone = card.cloneNode(true);
-        card.parentNode.replaceChild(clone, card);
-    });
+    try {
+        const sortfunction = document.getElementsByClassName('sort-controls')[0];
+        sortfunction.style.visibility = 'visible'; // Hide sort function when viewing collection
+        const response = await fetch('/api/get-pokemon');
+        const savedPokemon = await response.json();
+        
+        const container = document.getElementById('pokemonContainer');
+        container.innerHTML = ''; // Clear existing content
+        
+        savedPokemon.forEach(pokemon => {
+            const pokemonCard = createPokemonCardFromDB(pokemon);
+            container.appendChild(pokemonCard);
+        });
+        
+        console.log(`Loaded ${savedPokemon.length} Pokemon from database`);
+        
+        // Remove any catch container when viewing collection
+        const existingCatchContainer = document.querySelector('.catch-container');
+        if (existingCatchContainer) {
+            existingCatchContainer.remove();
+        }
+        
+        sortPokemon('id'); 
+    } catch (error) {
+        console.error('Error loading saved Pokemon:', error);
+    }
     
     // Get fresh references after cloning
     const freshLoadedPokemon = document.querySelectorAll('.pokemon-card');
@@ -953,6 +974,36 @@ function togglePokemonDisplay() {
         pokemonContainer.style.display = 'none';
         toggleBtn.textContent = 'Show Pokemon';
     }
+}
+
+const loadMarketPokemon = async () => {
+    try {
+        const sortfunction = document.getElementsByClassName('sort-controls')[0];
+        sortfunction.style.visibility = 'visible'; // Hide sort function when viewing collection
+        const response = await fetch('/api/market-pokemon');
+        const savedPokemon = await response.json();
+        
+        const container = document.getElementById('pokemonContainer');
+        container.innerHTML = ''; // Clear existing content
+        
+        savedPokemon.forEach(pokemon => {
+            const pokemonCard = createPokemonCardFromDB(pokemon);
+            container.appendChild(pokemonCard);
+        });
+        
+        console.log(`Loaded ${savedPokemon.length} Pokemon from database`);
+        
+        // Remove any catch container when viewing collection
+        const existingCatchContainer = document.querySelector('.catch-container');
+        if (existingCatchContainer) {
+            existingCatchContainer.remove();
+        }
+        
+        sortPokemon('id'); 
+    } catch (error) {
+        console.error('Error loading saved Pokemon:', error);
+    }
+   
 }
 
 // Function to load saved Pokemon from database
