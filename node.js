@@ -169,6 +169,30 @@ app.get('/api/get-pokemon', requireAuth, async (req, res) => {
     }
 });
 
+<<<<<<< HEAD
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+app.get('/api/coins', requireAuth, async (req, res) => {
+    try {
+=======
 app.get('/api/market-pokemon', async (req, res) => {
     try {
         const marketPokemon = await db.collection('marketCollection').find().toArray();
@@ -182,6 +206,7 @@ app.get('/api/market-pokemon', async (req, res) => {
 
 app.get('/api/coins', requireAuth, async (req, res) => {
     try {
+>>>>>>> e40a383 (Market css fixed)
         console.log('Session userId:', req.session.userId);
 
         const user = await db.collection('users').findOne({
@@ -190,12 +215,9 @@ app.get('/api/coins', requireAuth, async (req, res) => {
 
         console.log('User found:', user);
 
-        
-
         if (!user) {
             return res.status(404).json({ success: false, message: "User not found" });
         }
-
 
         res.json({ coins: user.coins });
     } catch (error) {

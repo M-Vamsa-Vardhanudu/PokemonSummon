@@ -30,6 +30,49 @@ async function loadCoins() {
     }
 }
 
+async function loadbuddy(){
+    try{
+        const response = await fetch('/api/buddy');
+        if(!response.ok) {
+            throw new Error(`Failed to fetch buddy: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        buddy = data.buddy || null; // Update the global `buddy` variable
+        updatebuddyinDB(Buddy);
+    }
+    catch(error){
+        console.error("Error loading buddy:",error);
+        buddy = null; // Default to no buddy if the request fails
+        updatebuddyinDB(Buddy);
+    }
+}
+
+async function updatebuddyinDB(buddy) {
+    console.log('Updating buddy in DB:', buddy);
+    try {
+        const response = await fetch('/api/update-buddy', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ buddy: buddy }),
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text(); // safely read HTML or text error
+            console.error('Failed to update buddy in DB:', errorText);
+            return;
+        }
+
+        const data = await response.json();
+        if (!data.success) {
+            console.error('Failed to update buddy in DB:', data.message);
+        }
+    } catch (error) {
+        console.error('Error updating buddy in DB:', error);
+    }
+}
+
 async function updateCoinsInDB(newCoins) {
     console.log('Updating coins in DB:', newCoins);
     try {
@@ -819,51 +862,6 @@ function showLogin() {
     document.getElementById('registerForm').style.display = 'none';
     document.getElementById('loginForm').style.display = 'block';
 }
-
-
-async function loadbuddy(){
-    try{
-        const response = await fetch('/api/buddy');
-        if(!response.ok) {
-            throw new Error(`Failed to fetch buddy: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        buddy = data.buddy || null; // Update the global `buddy` variable
-        updatebuddyinDB(Buddy);
-    }
-    catch(error){
-        console.error("Error loading buddy:",error);
-        buddy = null; // Default to no buddy if the request fails
-        updatebuddyinDB(Buddy);
-    }
-}
-
-async function updatebuddyinDB(buddy) {
-    console.log('Updating buddy in DB:', buddy);
-    try {
-        const response = await fetch('/api/update-buddy', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ buddy: buddy }),
-            credentials: 'include'
-        });
-
-        if (!response.ok) {
-            const errorText = await response.text(); // safely read HTML or text error
-            console.error('Failed to update buddy in DB:', errorText);
-            return;
-        }
-
-        const data = await response.json();
-        if (!data.success) {
-            console.error('Failed to update buddy in DB:', data.message);
-        }
-    } catch (error) {
-        console.error('Error updating buddy in DB:', error);
-    }
-}
-
 
 async function register() {
     const username = document.getElementById('registerUsername').value;
