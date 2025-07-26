@@ -169,6 +169,26 @@ app.get('/api/get-pokemon', requireAuth, async (req, res) => {
     }
 });
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 app.get('/api/coins', requireAuth, async (req, res) => {
     try {
         console.log('Session userId:', req.session.userId);
