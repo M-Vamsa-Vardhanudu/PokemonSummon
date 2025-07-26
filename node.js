@@ -60,7 +60,14 @@ app.post('/api/register', async (req, res) => {
             username,
             password: hashedPassword,
             createdAt: new Date(),
-            coins: 5000
+            coins: 5000,
+            buddy: null,
+            pokeballs:[
+                { type: 'pokeball', count: 10 },
+                { type: 'greatball', count: 5 },
+                { type: 'ultraball', count: 2 },
+                { type: 'masterball', count: 1 }
+            ]
         };
         
         const result = await db.collection('users').insertOne(userData);
@@ -162,12 +169,31 @@ app.get('/api/get-pokemon', requireAuth, async (req, res) => {
     }
 });
 
-app.get('/api/coins' , requireAuth, async (req, res) => {
+app.get('/api/market-pokemon', async (req, res) => {
     try {
-        const user = await db.collection('users').findOne({ _id: req.session.userId });
+        const marketPokemon = await db.collection('marketCollection').find().toArray();
+        res.json(marketPokemon);
+    }
+    catch (error) {
+        console.error("Error fetching market Pokemon:", error);
+        res.status(500).json({ error: "Failed to fetch market Pokemon" });
+    }
+});
+
+app.get('/api/coins', requireAuth, async (req, res) => {
+    try {
+        console.log('Session userId:', req.session.userId);
+
+        const user = await db.collection('users').findOne({
+            _id: new ObjectId(req.session.userId)
+        });
+
+        console.log('User found:', user);
+
         if (!user) {
             return res.status(404).json({ success: false, message: "User not found" });
         }
+
         res.json({ coins: user.coins });
     } catch (error) {
         console.error("Error fetching coins:", error);
@@ -183,7 +209,7 @@ app.post('/api/update-coins', requireAuth, async (req, res) => {
         }
 
         const result = await db.collection('users').updateOne(
-            { _id: req.session.userId },
+            { _id: new ObjectId(req.session.userId) },
             { $set: { coins } }
         );
 
