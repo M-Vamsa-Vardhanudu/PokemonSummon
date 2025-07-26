@@ -30,7 +30,6 @@ async function loadCoins() {
     }
 }
 
-<<<<<<< HEAD
 async function loadbuddy(){
     try{
         const response = await fetch('/api/buddy');
@@ -74,8 +73,6 @@ async function updatebuddyinDB(buddy) {
     }
 }
 
-=======
->>>>>>> e40a383 (Market css fixed)
 async function updateCoinsInDB(newCoins) {
     console.log('Updating coins in DB:', newCoins);
     try {
