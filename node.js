@@ -169,25 +169,16 @@ app.get('/api/get-pokemon', requireAuth, async (req, res) => {
     }
 });
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+app.get('/api/market-pokemon', async (req, res) => {
+    try {
+        const marketPokemon = await db.collection('marketCollection').find().toArray();
+        res.json(marketPokemon);
+    }
+    catch (error) {
+        console.error("Error fetching market Pokemon:", error);
+        res.status(500).json({ error: "Failed to fetch market Pokemon" });
+    }
+});
 
 app.get('/api/coins', requireAuth, async (req, res) => {
     try {
@@ -199,9 +190,12 @@ app.get('/api/coins', requireAuth, async (req, res) => {
 
         console.log('User found:', user);
 
+        
+
         if (!user) {
             return res.status(404).json({ success: false, message: "User not found" });
         }
+
 
         res.json({ coins: user.coins });
     } catch (error) {

@@ -30,49 +30,6 @@ async function loadCoins() {
     }
 }
 
-async function loadbuddy(){
-    try{
-        const response = await fetch('/api/buddy');
-        if(!response.ok) {
-            throw new Error(`Failed to fetch buddy: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        buddy = data.buddy || null; // Update the global `buddy` variable
-        updatebuddyinDB(Buddy);
-    }
-    catch(error){
-        console.error("Error loading buddy:",error);
-        buddy = null; // Default to no buddy if the request fails
-        updatebuddyinDB(Buddy);
-    }
-}
-
-async function updatebuddyinDB(buddy) {
-    console.log('Updating buddy in DB:', buddy);
-    try {
-        const response = await fetch('/api/update-buddy', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ buddy: buddy }),
-            credentials: 'include'
-        });
-
-        if (!response.ok) {
-            const errorText = await response.text(); // safely read HTML or text error
-            console.error('Failed to update buddy in DB:', errorText);
-            return;
-        }
-
-        const data = await response.json();
-        if (!data.success) {
-            console.error('Failed to update buddy in DB:', data.message);
-        }
-    } catch (error) {
-        console.error('Error updating buddy in DB:', error);
-    }
-}
-
 async function updateCoinsInDB(newCoins) {
     console.log('Updating coins in DB:', newCoins);
     try {
@@ -302,14 +259,32 @@ const tradePokemon = async (pokemonCard) => {
 }
 
 async function openMarketModal(){
-    await loadSavedPokemon();
-    const loadedPokemon = document.querySelectorAll('.pokemon-card');
-    
-    // Remove any existing click handlers to prevent duplicates
-    loadedPokemon.forEach(card => {
-        const clone = card.cloneNode(true);
-        card.parentNode.replaceChild(clone, card);
-    });
+    try {
+        const sortfunction = document.getElementsByClassName('sort-controls')[0];
+        sortfunction.style.visibility = 'visible'; // Hide sort function when viewing collection
+        const response = await fetch('/api/get-pokemon');
+        const savedPokemon = await response.json();
+        
+        const container = document.getElementById('pokemonContainer');
+        container.innerHTML = ''; // Clear existing content
+        
+        savedPokemon.forEach(pokemon => {
+            const pokemonCard = createPokemonCardFromDB(pokemon);
+            container.appendChild(pokemonCard);
+        });
+        
+        console.log(`Loaded ${savedPokemon.length} Pokemon from database`);
+        
+        // Remove any catch container when viewing collection
+        const existingCatchContainer = document.querySelector('.catch-container');
+        if (existingCatchContainer) {
+            existingCatchContainer.remove();
+        }
+        
+        sortPokemon('id'); 
+    } catch (error) {
+        console.error('Error loading saved Pokemon:', error);
+    }
     
     // Get fresh references after cloning
     const freshLoadedPokemon = document.querySelectorAll('.pokemon-card');
@@ -845,6 +820,51 @@ function showLogin() {
     document.getElementById('loginForm').style.display = 'block';
 }
 
+
+async function loadbuddy(){
+    try{
+        const response = await fetch('/api/buddy');
+        if(!response.ok) {
+            throw new Error(`Failed to fetch buddy: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        buddy = data.buddy || null; // Update the global `buddy` variable
+        updatebuddyinDB(Buddy);
+    }
+    catch(error){
+        console.error("Error loading buddy:",error);
+        buddy = null; // Default to no buddy if the request fails
+        updatebuddyinDB(Buddy);
+    }
+}
+
+async function updatebuddyinDB(buddy) {
+    console.log('Updating buddy in DB:', buddy);
+    try {
+        const response = await fetch('/api/update-buddy', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ buddy: buddy }),
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text(); // safely read HTML or text error
+            console.error('Failed to update buddy in DB:', errorText);
+            return;
+        }
+
+        const data = await response.json();
+        if (!data.success) {
+            console.error('Failed to update buddy in DB:', data.message);
+        }
+    } catch (error) {
+        console.error('Error updating buddy in DB:', error);
+    }
+}
+
+
 async function register() {
     const username = document.getElementById('registerUsername').value;
     const password = document.getElementById('registerPassword').value;
@@ -953,6 +973,36 @@ function togglePokemonDisplay() {
         pokemonContainer.style.display = 'none';
         toggleBtn.textContent = 'Show Pokemon';
     }
+}
+
+const loadMarketPokemon = async () => {
+    try {
+        const sortfunction = document.getElementsByClassName('sort-controls')[0];
+        sortfunction.style.visibility = 'visible'; // Hide sort function when viewing collection
+        const response = await fetch('/api/market-pokemon');
+        const savedPokemon = await response.json();
+        
+        const container = document.getElementById('pokemonContainer');
+        container.innerHTML = ''; // Clear existing content
+        
+        savedPokemon.forEach(pokemon => {
+            const pokemonCard = createPokemonCardFromDB(pokemon);
+            container.appendChild(pokemonCard);
+        });
+        
+        console.log(`Loaded ${savedPokemon.length} Pokemon from database`);
+        
+        // Remove any catch container when viewing collection
+        const existingCatchContainer = document.querySelector('.catch-container');
+        if (existingCatchContainer) {
+            existingCatchContainer.remove();
+        }
+        
+        sortPokemon('id'); 
+    } catch (error) {
+        console.error('Error loading saved Pokemon:', error);
+    }
+   
 }
 
 // Function to load saved Pokemon from database
