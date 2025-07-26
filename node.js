@@ -190,6 +190,49 @@ app.get('/api/coins', requireAuth, async (req, res) => {
     }
 });
 
+app.get('/api/buddy', requireAuth, async(req,res) =>{
+    try{
+        const user = await db.collection('users').findOne({
+            _id: new ObjectId(req.session.userId)
+        });
+
+        console.log('User found:', user);
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        res.json({ buddy: user.buddy });
+    } catch (error) {
+        console.error("Error fetching buddy:", error);
+        res.status(500).json({ success: false, error: "Failed to fetch buddy" });
+    }
+});
+
+app.post('/api/update-buddy', requireAuth, async (req, res) => {
+    try {
+        const { buddy } = req.body;
+        // if (typeof buddy !== 'number') {
+        //     return res.status(400).json({ success: false, message: "Invalid buddy" });
+        // }
+
+        const result = await db.collection('users').updateOne(
+            { _id: new ObjectId(req.session.userId) },
+            { $set: { buddy } }
+        );
+
+        if (result.modifiedCount === 0) {
+            return res.status(404).json({ success: false, message: "User not found or no changes made" });
+        }
+
+        res.json({ success: true, message: "buddy updated successfully" });
+    } catch (error) {
+        console.error("Error updating buddy:", error);
+        res.status(500).json({ success: false, error: "Failed to update buddy" });
+    }
+});
+
+
 app.post('/api/update-coins', requireAuth, async (req, res) => {
     try {
         const { coins } = req.body;
@@ -260,6 +303,8 @@ app.delete('/api/trade-pokemon/:id', requireAuth, async(req, res) => {
         res.status(500).json({ success: false, error: "Failed to trade Pokemon" });
     }
 });
+
+
 
 app.put('/api/market-pokemon/:id', requireAuth, async(req, res) => {
     try {

@@ -30,6 +30,49 @@ async function loadCoins() {
     }
 }
 
+async function loadbuddy(){
+    try{
+        const response = await fetch('/api/buddy');
+        if(!response.ok) {
+            throw new Error(`Failed to fetch buddy: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        buddy = data.buddy || null; // Update the global `buddy` variable
+        updatebuddyinDB(Buddy);
+    }
+    catch(error){
+        console.error("Error loading buddy:",error);
+        buddy = null; // Default to no buddy if the request fails
+        updatebuddyinDB(Buddy);
+    }
+}
+
+async function updatebuddyinDB(buddy) {
+    console.log('Updating buddy in DB:', buddy);
+    try {
+        const response = await fetch('/api/update-buddy', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ buddy: buddy }),
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text(); // safely read HTML or text error
+            console.error('Failed to update buddy in DB:', errorText);
+            return;
+        }
+
+        const data = await response.json();
+        if (!data.success) {
+            console.error('Failed to update buddy in DB:', data.message);
+        }
+    } catch (error) {
+        console.error('Error updating buddy in DB:', error);
+    }
+}
+
 async function updateCoinsInDB(newCoins) {
     console.log('Updating coins in DB:', newCoins);
     try {
@@ -943,6 +986,39 @@ const loadSavedPokemon = async () => {
    
 }
 
+// const tradePokemon = async (pokemonCard) => {
+//     const pokemon = pokemonCard;
+//     const idelm = pokemonCard.querySelector('.pokemon-id');
+//     let idText = null;
+//     if ( !idelm){
+//         console.log("No pokemon id found in card" + pokemonCard + " " + pokemon);
+//         return;
+//     }
+//     else {
+//         idText = idelm.textContent; // ← this is "#080"
+//         idText = idText.replace("#" , "");
+//         console.log('Pokemon ID:', idText );
+
+//         console.log(`/api/trade-pokemon/${idText}`);
+
+//     }
+//     const response = await fetch(`/api/trade-pokemon/${idText}`, {
+//         method: 'DELETE'
+//     });
+
+//     const result = await response.json();
+//     if ( result.success ){
+//         pokemon.style.animation = 'fadeOut 0.5s';
+
+//         setTimeout(()=>{
+//             pokemon.remove();
+//         } , 500);
+//     }
+//     else{
+//         console.log("error trading pokemon");
+//     }
+// }
+
 //Manav
 //Buddy System use class "buddy-selected" to mark the buddy
 const Buddy = async () => {
@@ -957,7 +1033,8 @@ const Buddy = async () => {
 
                
                 if (buddyCard === card) {
-                    card.classList.remove('buddy-selected');
+                    // card.classList.remove('buddy-selected');
+                    updatebuddyinDB(null);
                     buddyCard = null;
                     alert(`${name} is no longer your buddy!`);
                     console.log('Buddy removed');
@@ -966,15 +1043,17 @@ const Buddy = async () => {
 
               
                 if (buddyCard) {
-                    buddyCard.classList.remove('buddy-selected');
+                    // buddyCard.classList.remove('buddy-selected');
+                    updatebuddyinDB(null);
                 }
 
                 
-                loaded.forEach(c => c.classList.remove('buddy-selected'));
+                // loaded.forEach(c => c.classList.remove('buddy-selected'));
 
               
                 buddyCard = card;
-                card.classList.add('buddy-selected');
+                // card.classList.add('buddy-selected');
+                updatebuddyinDB(card.dataset.id);
                 alert(`You have selected ${name} as your buddy!`);
                 console.log('Buddy selected:', name);
             });
