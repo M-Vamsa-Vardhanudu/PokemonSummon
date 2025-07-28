@@ -169,30 +169,6 @@ app.get('/api/get-pokemon', requireAuth, async (req, res) => {
     }
 });
 
-<<<<<<< HEAD
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-app.get('/api/coins', requireAuth, async (req, res) => {
-    try {
-=======
 app.get('/api/market-pokemon', async (req, res) => {
     try {
         const marketPokemon = await db.collection('marketCollection').find().toArray();
@@ -206,7 +182,6 @@ app.get('/api/market-pokemon', async (req, res) => {
 
 app.get('/api/coins', requireAuth, async (req, res) => {
     try {
->>>>>>> e40a383 (Market css fixed)
         console.log('Session userId:', req.session.userId);
 
         const user = await db.collection('users').findOne({
@@ -340,11 +315,63 @@ app.delete('/api/trade-pokemon/:id', requireAuth, async(req, res) => {
     }
 });
 
+app.post('/api/buy-pokemon/:id', requireAuth, async(req, res) => {
+    try {
+        const marketId = req.params.id;
+        const userId = req.session.userId;
+        const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+        
+        const pokemonId = parseInt(req.params.id, 10);
+        console.log("Looking for id:", pokemonId);
 
+        const marketPokemon = await db.collection('marketCollection').findOne({ id: pokemonId });
+        console.log("Market Pokemon found:", marketPokemon);
+        
+        if (!marketPokemon) {
+            return res.status(404).json({ success: false, message: "Pokemon not found in market" });
+        }
+        
+        // Verify user has enough coins
+        if (user.coins < marketPokemon.price) {
+            return res.status(400).json({ success: false, message: "Not enough coins to buy this Pokemon" });
+        }
+        
+        // Add Pokemon to user's collection
+        await db.collection('pokemonCollection').insertOne({
+            ...marketPokemon,
+            userId: userId,
+            purchasedAt: new Date()
+        });
+        
+        // Remove Pokemon from market
+        await db.collection('marketCollection').deleteOne({ id: pokemonId });
+        
+        if (marketPokemon.userId) {
+            await db.collection('users').updateOne(
+                { _id: new ObjectId(marketPokemon.userId) },
+                { $inc: { coins: marketPokemon.price } }
+            );
+            
+        }
+        // Send success response
+        res.json({ 
+            success: true, 
+            message: "Pokemon purchased successfully" 
+        });
+    }
+    catch (error) {
+        console.error("Error buying Pokemon:", error);
+        res.status(500).json({ success: false, error: "Failed to buy Pokemon" });
+    }
+});
 
 app.put('/api/market-pokemon/:id', requireAuth, async(req, res) => {
     try {
         const pokemonId = parseInt(req.params.id, 10);
+        const { price } = req.body; // Get price from request body
         console.log("Putting Pokemon in market with ID:", pokemonId);
         
         // First, retrieve the complete Pokemon data
@@ -369,7 +396,8 @@ app.put('/api/market-pokemon/:id', requireAuth, async(req, res) => {
         // Insert the complete Pokemon data into the market collection
         const marketResult = await db.collection('marketCollection').insertOne({
             ...pokemonData,
-            listedAt: new Date()
+            listedAt: new Date(),
+            price: price // Include the price in the market listing
         });
 
         res.json({ 

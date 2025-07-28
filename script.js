@@ -350,7 +350,13 @@ async function openMarketModal(){
                 cancelBtn.onclick = null;
 
                 confirmBtn.onclick = async () => {
-                    await putPokemonInMarket(card);
+                    let price = prompt("Enter the price for this Pokemon:");
+                    price = parseInt(price , 10);
+                    if (isNaN(price) || price <= 0) {
+                        alert("Invalid price entered. Please enter a valid number greater than 0.");
+                        return;
+                    }
+                    await putPokemonInMarket(card , price);
                     modal.classList.remove('active');
                     setTimeout(() => modal.classList.add('hidden'), 300);
                 };
@@ -363,7 +369,7 @@ async function openMarketModal(){
         });
     });
 }
-const putPokemonInMarket = async (pokemonCard) => {
+const putPokemonInMarket = async (pokemonCard , price) => {
     const pokemon = pokemonCard;
     const idelm = pokemonCard.querySelector('.pokemon-id');
     let idText = null;
@@ -380,7 +386,9 @@ const putPokemonInMarket = async (pokemonCard) => {
     
     try {
         const response = await fetch(`/api/market-pokemon/${idText}`, {
-            method: 'PUT'
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ price }) // Send price
         });
 
         console.log("Response status:", response.status);
@@ -510,10 +518,6 @@ const getPokemonImage = async () => {
         pokemonCard.appendChild(id);
         pokemonCard.appendChild(types);
         
-        // Clear previous Pokemon and add new one
-        container.innerHTML = '';
-        container.appendChild(pokemonCard);
-        
         // Add catch container
         addCatchContainer(container);
         
@@ -538,7 +542,7 @@ const getPokemonImage = async () => {
 
 }
 // Function to create a Pokemon card from database data
-function createPokemonCardFromDB(pokemon) {
+function createPokemonCardFromDB(pokemon, isMarket = false) {
     // Debug log to see what we're getting from the database
     console.log("Pokemon data from DB:", pokemon);
     
@@ -648,6 +652,44 @@ function createPokemonCardFromDB(pokemon) {
     pokemonCard.appendChild(name);
     pokemonCard.appendChild(id);
     pokemonCard.appendChild(types);
+
+    // Only show price and buy button if this is for market display
+    if (pokemon.price && isMarket) {
+        const priceDiv = document.createElement('div');
+        priceDiv.className = 'pokemon-price';
+        priceDiv.textContent = `Price: ${pokemon.price} coins`;
+        const buyButton = document.createElement('button');
+        buyButton.innerText = 'Buy';
+        buyButton.className = 'buy-button';
+        priceDiv.appendChild(document.createElement('br'));
+        priceDiv.appendChild(document.createElement('br'));
+        priceDiv.appendChild(buyButton);
+        buyButton.onclick = async () => {
+            if ( userCoins < pokemon.price ) {
+                alert("You don't have enough coins to buy this Pokemon!");
+                return;
+            }
+            console.log("Sending pokemonId:", pokemonId, "type:", typeof pokemonId);
+
+            const response = await fetch(`/api/buy-pokemon/${pokemonId}`, {
+                method: 'POST'
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                alert(`You successfully bought ${pokemonName}!`);
+                userCoins -= pokemon.price;
+                updateCoinsDisplay();
+                updateCoinsInDB(userCoins); // Save the updated coins value in MongoDB
+                loadMarketPokemon();
+            }   
+            else {
+                alert(`Failed to buy ${pokemonName}: ${result.message}`);
+            }
+        };
+        pokemonCard.appendChild(priceDiv);
+    }
+
     
     return pokemonCard;
 }
@@ -983,8 +1025,9 @@ const loadMarketPokemon = async () => {
         const container = document.getElementById('pokemonContainer');
         container.innerHTML = ''; // Clear existing content
         
+        // For loadMarketPokemon function
         savedPokemon.forEach(pokemon => {
-            const pokemonCard = createPokemonCardFromDB(pokemon);
+            const pokemonCard = createPokemonCardFromDB(pokemon, true); // true = is market
             container.appendChild(pokemonCard);
         });
         
@@ -1015,7 +1058,7 @@ const loadSavedPokemon = async () => {
         container.innerHTML = ''; // Clear existing content
         
         savedPokemon.forEach(pokemon => {
-            const pokemonCard = createPokemonCardFromDB(pokemon);
+            const pokemonCard = createPokemonCardFromDB(pokemon, false); // false = not market
             container.appendChild(pokemonCard);
         });
         
@@ -1033,39 +1076,6 @@ const loadSavedPokemon = async () => {
     }
    
 }
-
-// const tradePokemon = async (pokemonCard) => {
-//     const pokemon = pokemonCard;
-//     const idelm = pokemonCard.querySelector('.pokemon-id');
-//     let idText = null;
-//     if ( !idelm){
-//         console.log("No pokemon id found in card" + pokemonCard + " " + pokemon);
-//         return;
-//     }
-//     else {
-//         idText = idelm.textContent; // ← this is "#080"
-//         idText = idText.replace("#" , "");
-//         console.log('Pokemon ID:', idText );
-
-//         console.log(`/api/trade-pokemon/${idText}`);
-
-//     }
-//     const response = await fetch(`/api/trade-pokemon/${idText}`, {
-//         method: 'DELETE'
-//     });
-
-//     const result = await response.json();
-//     if ( result.success ){
-//         pokemon.style.animation = 'fadeOut 0.5s';
-
-//         setTimeout(()=>{
-//             pokemon.remove();
-//         } , 500);
-//     }
-//     else{
-//         console.log("error trading pokemon");
-//     }
-// }
 
 //Manav
 //Buddy System use class "buddy-selected" to mark the buddy
