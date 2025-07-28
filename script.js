@@ -2,16 +2,63 @@
 let selectedPokeball = null;
 let currentPokemon = null;
 let pokeballInventory = {
-    pokeball: 10,
-    greatball: 5,
-    ultraball: 3,
-    masterball: 1
+    pokeball: 0,
+    greatball: 0,
+    ultraball: 0,
+    masterball: 0
 };
+
+async function loadPokeballsFromDB() {
+    try {
+        const res = await fetch('/api/pokeballs');
+        const data = await res.json();
+
+        if (data.success) {
+            data.pokeballs.forEach(ball => {
+                pokeballInventory[ball.type] = ball.count;
+            });
+            updateBallCounts(); // ⬅️ update UI
+            console.log("Loaded inventory:", pokeballInventory);
+        } else {
+            console.error("Failed to load pokeballs:", data.message);
+        }
+    } catch (err) {
+        console.error("Error loading pokeballs from DB:", err);
+    }
+}
+
+// Call this once when page loads
+window.addEventListener('DOMContentLoaded', loadPokeballsFromDB);
+
 
 // Global variable for user coins
 // let userCoins = 500; // Starting amount
 
 // let loadCoins = loadCoins();
+async function updatePokeballCount(ballType, newCount) {
+    try {
+        const response = await fetch('/api/pokeballs-update', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                type: ballType,
+                count: newCount
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to update ${ballType} count: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log(`${ballType} count updated successfully:`, data);
+    } catch (error) {
+        console.error(`Error updating ${ballType} count:`, error);
+    }
+}
+
 
 async function loadCoins() {
     try {
@@ -27,49 +74,6 @@ async function loadCoins() {
         console.error('Error loading coins:', error);
         userCoins = -100; // Default to 0 coins if the request fails
         updateCoinsDisplay();
-    }
-}
-
-async function loadbuddy(){
-    try{
-        const response = await fetch('/api/buddy');
-        if(!response.ok) {
-            throw new Error(`Failed to fetch buddy: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        buddy = data.buddy || null; // Update the global `buddy` variable
-        updatebuddyinDB(Buddy);
-    }
-    catch(error){
-        console.error("Error loading buddy:",error);
-        buddy = null; // Default to no buddy if the request fails
-        updatebuddyinDB(Buddy);
-    }
-}
-
-async function updatebuddyinDB(buddy) {
-    console.log('Updating buddy in DB:', buddy);
-    try {
-        const response = await fetch('/api/update-buddy', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ buddy: buddy }),
-            credentials: 'include'
-        });
-
-        if (!response.ok) {
-            const errorText = await response.text(); // safely read HTML or text error
-            console.error('Failed to update buddy in DB:', errorText);
-            return;
-        }
-
-        const data = await response.json();
-        if (!data.success) {
-            console.error('Failed to update buddy in DB:', data.message);
-        }
-    } catch (error) {
-        console.error('Error updating buddy in DB:', error);
     }
 }
 
@@ -94,24 +98,26 @@ async function updateCoinsInDB(newCoins) {
 }
 
 function buyPokeball(ballType, price) {
-    
     if (userCoins >= price) {
         // Deduct coins
         userCoins -= price;
         updateCoinsDisplay();
-        updateCoinsInDB(userCoins); // Save the updated coins value in MongoDB
+        updateCoinsInDB(userCoins); // Save coins in DB
 
         // Add to inventory
         pokeballInventory[ballType]++;
         updateBallCounts();
 
-        // Show success message
+        // Update in DB
+        updatePokeballCount(ballType, pokeballInventory[ballType]);
+
+        // Success message
         showNotification(`Successfully purchased 1 ${formatBallName(ballType)}!`, 'success');
     } else {
-        // Show insufficient funds message
         showNotification(`Not enough coins! You need ${price - userCoins} more coins.`, 'error');
     }
 }
+
 
 
 
@@ -716,53 +722,55 @@ function formatBallName(ballType) {
     }
 }
 
-// Function to attempt catching the Pokemon
 function attemptCatch() {
     if (!currentPokemon || !selectedPokeball) {
         return;
     }
-    
-    // Decrease ball count
+
+    // ⛔ Don't allow if count is 0 or less
+    if (pokeballInventory[selectedPokeball] <= 0) {
+        showNotification(`No ${formatBallName(selectedPokeball)} left in inventory!`, 'error');
+        return;
+    }
+
+    // Decrease local count
     pokeballInventory[selectedPokeball]--;
     updateBallCounts();
-    
-    // Disable button during animation
+
+    // 🔁 Update MongoDB
+    updatePokeballCount(selectedPokeball, pokeballInventory[selectedPokeball]);
+
+    // Disable catch button during animation
     const catchButton = document.querySelector('.catch-button');
     catchButton.disabled = true;
-    
-    // Show catch animation
+
     showCatchAnimation(selectedPokeball);
-    
-    // Get capture probability based on Pokemon rarity and ball type
+
     const rarity = currentPokemon.rarity;
     const captureChance = captureRates[rarity][selectedPokeball];
-    
-    // Generate a fresh random number between 0 and 1 for this specific throw
     const roll = Math.random();
-    console.log(`Throw attempt with ${selectedPokeball}: Chance=${captureChance}, Roll=${roll}`);
-    
-    // Success if roll is less than capture chance
     const success = roll < captureChance;
-    
-    // Wait for animation to complete before showing result
+
+    console.log(`Throw attempt with ${selectedPokeball}: Chance=${captureChance}, Roll=${roll}`);
+
     setTimeout(() => {
         if (success) {
             catchSuccess();
         } else {
             catchFailure();
-            
+
             selectedPokeball = null;
-            
-            // Remove selected class from all pokeballs
-            document.querySelectorAll('.pokeball-item').forEach(item => {
-                item.classList.remove('selected');
-            });
+
+            document.querySelectorAll('.pokeball-item').forEach(item =>
+                item.classList.remove('selected')
+            );
         }
-        
-        // Re-enable button after catch attempt, but it will be disabled until a ball is selected again
+
         catchButton.disabled = selectedPokeball === null;
     }, 3000);
 }
+
+
 
 // Function to show catch animation
 function showCatchAnimation(ballType) {
@@ -862,6 +870,51 @@ function showLogin() {
     document.getElementById('registerForm').style.display = 'none';
     document.getElementById('loginForm').style.display = 'block';
 }
+
+
+async function loadbuddy(){
+    try{
+        const response = await fetch('/api/buddy');
+        if(!response.ok) {
+            throw new Error(`Failed to fetch buddy: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        buddy = data.buddy || null; // Update the global `buddy` variable
+        updatebuddyinDB(Buddy);
+    }
+    catch(error){
+        console.error("Error loading buddy:",error);
+        buddy = null; // Default to no buddy if the request fails
+        updatebuddyinDB(Buddy);
+    }
+}
+
+async function updatebuddyinDB(buddy) {
+    console.log('Updating buddy in DB:', buddy);
+    try {
+        const response = await fetch('/api/update-buddy', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ buddy: buddy }),
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text(); // safely read HTML or text error
+            console.error('Failed to update buddy in DB:', errorText);
+            return;
+        }
+
+        const data = await response.json();
+        if (!data.success) {
+            console.error('Failed to update buddy in DB:', data.message);
+        }
+    } catch (error) {
+        console.error('Error updating buddy in DB:', error);
+    }
+}
+
 
 async function register() {
     const username = document.getElementById('registerUsername').value;

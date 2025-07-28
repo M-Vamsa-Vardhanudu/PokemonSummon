@@ -63,10 +63,10 @@ app.post('/api/register', async (req, res) => {
             coins: 5000,
             buddy: null,
             pokeballs:[
-                { type: 'pokeball', count: 10 },
-                { type: 'greatball', count: 5 },
-                { type: 'ultraball', count: 2 },
-                { type: 'masterball', count: 1 }
+                { "type": "pokeball", "count": 10 },
+                { "type": "greatball", "count": 5 },
+                { "type": "ultraball", "count": 3 },
+                { "type": "masterball", "count": 1 }
             ]
         };
         
@@ -169,30 +169,6 @@ app.get('/api/get-pokemon', requireAuth, async (req, res) => {
     }
 });
 
-<<<<<<< HEAD
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-app.get('/api/coins', requireAuth, async (req, res) => {
-    try {
-=======
 app.get('/api/market-pokemon', async (req, res) => {
     try {
         const marketPokemon = await db.collection('marketCollection').find().toArray();
@@ -206,7 +182,30 @@ app.get('/api/market-pokemon', async (req, res) => {
 
 app.get('/api/coins', requireAuth, async (req, res) => {
     try {
->>>>>>> e40a383 (Market css fixed)
+        console.log('Session userId:', req.session.userId);
+
+        const user = await db.collection('users').findOne({
+            _id: new ObjectId(req.session.userId)
+        });
+
+        console.log('User found:', user);
+
+        
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+
+        res.json({ coins: user.coins });
+    } catch (error) {
+        console.error("Error fetching coins:", error);
+        res.status(500).json({ success: false, error: "Failed to fetch coins" });
+    }
+});
+
+app.get('/api/pokeballs', requireAuth, async (req, res) => {
+    try {
         console.log('Session userId:', req.session.userId);
 
         const user = await db.collection('users').findOne({
@@ -219,12 +218,43 @@ app.get('/api/coins', requireAuth, async (req, res) => {
             return res.status(404).json({ success: false, message: "User not found" });
         }
 
-        res.json({ coins: user.coins });
+        res.json({ success: true, pokeballs: user.pokeballs }); // ✅ Add success: true
     } catch (error) {
-        console.error("Error fetching coins:", error);
-        res.status(500).json({ success: false, error: "Failed to fetch coins" });
+        console.error("Error fetching pokeballs:", error);
+        res.status(500).json({ success: false, error: "Failed to fetch pokeballs" });
     }
 });
+
+
+app.post('/api/pokeballs-update', requireAuth, async (req, res) => {
+    const { type, count } = req.body;
+
+    if (!type || typeof count !== 'number') {
+        return res.status(400).json({ success: false, message: "Missing or invalid type/count" });
+    }
+
+    try {
+        const userId = new ObjectId(req.session.userId);
+        console.log("UserID:", userId, "Updating:", type, "To:", count);
+
+        const result = await db.collection('users').updateOne(
+            { _id: userId, "pokeballs.type": type },
+            { $set: { "pokeballs.$.count": count } } // ✅ use $set instead of $inc
+        );
+
+        console.log("Update result:", result);
+
+        if (result.modifiedCount === 0) {
+            return res.status(404).json({ success: false, message: "Poké Ball type not found or count unchanged" });
+        }
+
+        res.json({ success: true, message: "Poké Ball count updated" });
+    } catch (error) {
+        console.error("Error updating Poké Balls:", error);
+        res.status(500).json({ success: false, message: "Internal server error" });
+    }
+});
+
 
 app.get('/api/buddy', requireAuth, async(req,res) =>{
     try{
@@ -291,6 +321,98 @@ app.post('/api/update-coins', requireAuth, async (req, res) => {
         res.status(500).json({ success: false, error: "Failed to update coins" });
     }
 });
+
+// Endpoint to update Poké Ball inventory
+app.post('/api/update-pokeballs', async (req, res) => {
+    try {
+        const { userId } = req.session; // Get user ID from session
+        const { pokeballs } = req.body; // Get updated inventory from request body
+
+        // Validate data
+        if (!userId || !pokeballs || !Array.isArray(pokeballs)) {
+            console.log('Invalid data received:', { userId, pokeballs });
+            return res.status(400).json({ success: false, message: 'Invalid data' });
+        }
+
+        // Ensure each item in the array has the correct structure
+        const isValid = pokeballs.every(ball => 
+            typeof ball.type === 'string' && 
+            typeof ball.count === 'number' && 
+            ball.count >= 0
+        );
+
+        if (!isValid) {
+            console.log('Invalid Poké Ball structure:', pokeballs);
+            return res.status(400).json({ success: false, message: 'Invalid Poké Ball structure' });
+        }
+
+        // Update the user's Poké Ball inventory in the database
+        const updateResult = await db.collection('users').updateOne(
+            { _id: new ObjectId(userId) },
+            { $set: { pokeballs } }
+        );
+
+        if (updateResult.modifiedCount > 0) {
+            res.json({ success: true, message: 'Poké Ball inventory updated successfully' });
+        } else {
+            res.status(500).json({ success: false, message: 'Failed to update inventory' });
+        }
+    } catch (error) {
+        console.error('Error updating Poké Ball inventory:', error);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+});
+
+// Get Poké Ball inventory
+// const { ObjectId } = require('mongodb');
+
+app.get('/api/get-pokeballs', async (req, res) => {
+    try {
+      const { userId } = req.session;
+  
+      if (!userId) {
+        return res.status(401).json({ success: false, message: 'User not logged in' });
+      }
+  
+      const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
+  
+      if (!user) {
+        return res.status(404).json({ success: false, message: 'User not found' });
+      }
+  
+      if (!user.pokeballs) {
+        const defaultPokeballs = [
+          { type: 'pokeball', count: 10 },
+          { type: 'greatball', count: 5 },
+          { type: 'ultraball', count: 2 },
+          { type: 'masterball', count: 1 },
+        ];
+  
+        await db.collection('users').updateOne(
+          { _id: new ObjectId(userId) },
+          { $set: { pokeballs: defaultPokeballs } }
+        );
+  
+        return res.json({ success: true, pokeballs: defaultPokeballs });
+      }
+  
+      // Normalize format here
+      let pokeballArray = [];
+  
+      if (Array.isArray(user.pokeballs)) {
+        pokeballArray = user.pokeballs;
+      } else if (typeof user.pokeballs === 'object') {
+        pokeballArray = Object.entries(user.pokeballs).map(([type, count]) => ({ type, count }));
+      }
+  
+      res.json({ success: true, pokeballs: pokeballArray });
+    } catch (error) {
+      console.error('Error fetching Poké Ball inventory:', error);
+      res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+  });
+  
+
 
 // Get current user info
 app.get('/api/user', (req, res) => {
