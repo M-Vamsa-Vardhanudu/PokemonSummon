@@ -309,11 +309,203 @@ const tradePokemon = async (pokemonCard) => {
     }
 }
 
-// async function loadTradablePokemon(){
-//     try{
-//         const response = await fetch('/api/trade-offers');
-//     }
-// }
+async function loadTradablePokemon() {
+    try {
+        const response = await fetch('/api/trade-offers');
+        const data = await response.json();
+        const tradeOffers = data.tradeOffers || [];
+        console.log(tradeOffers);
+
+        // Get the container where you want to display the trade offers
+        const container = document.getElementById('tradeOffersContainer');
+        container.innerHTML = ''; // Clear previous offers
+
+        if (tradeOffers.length === 0) {
+            container.textContent = 'No trade offers available.';
+            return;
+        }
+
+        tradeOffers.forEach(async offer => {
+            // If you have the full Pokémon data in the offer, use it directly.
+            // If not, you may need to fetch the Pokémon details by ID.
+            // Here, we assume you only have the ID and want to show the ID and trade info.
+
+            const offerDiv = document.createElement('div');
+            offerDiv.className = 'trade-offer';
+
+            // Display trade info
+            offerDiv.innerHTML = `
+                <strong>From:</strong> ${offer.fromUserId} <br>
+                <strong>To:</strong> ${offer.toUserId} <br>
+                <strong>Offered Pokémon ID:</strong> ${offer.offeredPokemonId} <br>
+                <strong>Requested Pokémon ID:</strong> ${offer.requestedPokemonId || 'Any'} <br>
+                <strong>Status:</strong> ${offer.status}
+            `;
+
+
+            const pokemonId = offer.offeredPokemonId;
+            
+            // const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonId}`);
+            // const pokemonData = await response.json();
+            // console.log("Trying to fetch Pokemon data for ID:", offer.offeredPokemonId);
+            // // Extract the data you want to store
+            // const pokemonInfo = {
+            //     pokemonName: pokemonData.name,
+            //     pokemonImage: pokemonData.sprites.front_default || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${offer.offeredPokemonId}.png`,
+            //     pokemonId: pokemonData.id,
+            //     pokemonTypes: pokemonData.types.map(type => type.type.name)
+            // };
+            
+            // console.log("Fetched Pokemon data:", pokemonInfo);
+            // // Store current Pokemon globally
+            // currentPokemon = pokemonInfo;
+            
+            // // Create Pokemon card with proper rarity
+            // const pokemonCard = document.createElement('div');
+            // pokemonCard.className = 'pokemon-card';
+            // pokemonCard.id = 'current-pokemon';
+            
+            // // Set data-id attribute for sorting
+            // pokemonCard.dataset.id = pokemonInfo.pokemonId;
+            
+            // // Add rarity styling
+            // const rarity = getPokemonRarity(pokemonInfo.pokemonId);
+            // currentPokemon.rarity = rarity;
+            
+            // // Add tooltip for rarity information
+            // const tooltip = document.createElement('div');
+            // tooltip.className = `tooltip tooltip-${rarity}`;
+            // tooltip.textContent = `${rarity.charAt(0).toUpperCase() + rarity.slice(1)} Pokémon`;
+            // pokemonCard.appendChild(tooltip);
+            
+            // if (rarity !== 'common') {
+            //     pokemonCard.classList.add(`rarity-${rarity}`);
+                
+            //     // Add rarity badge
+            //     const rarityBadge = document.createElement('span');
+            //     rarityBadge.classList.add('rarity-badge', `rarity-${rarity}-badge`);
+            //     rarityBadge.textContent = rarity.charAt(0).toUpperCase() + rarity.slice(1);
+            //     pokemonCard.appendChild(rarityBadge);
+            // }
+            
+            // const img = document.createElement('img');
+            // img.src = pokemonInfo.pokemonImage;
+            // img.alt = pokemonInfo.pokemonName;
+            // img.className = 'pokemon-image';
+            
+            // const name = document.createElement('h3');
+            // name.textContent = pokemonInfo.pokemonName.charAt(0).toUpperCase() + pokemonInfo.pokemonName.slice(1);
+            // name.className = 'pokemon-name';
+            
+            // const id = document.createElement('p');
+            // id.textContent = `#${pokemonInfo.pokemonId.toString().padStart(3, '0')}`;
+            // id.className = 'pokemon-id';
+            
+            // const types = document.createElement('div');
+            // types.className = 'pokemon-types';
+            // pokemonInfo.pokemonTypes.forEach(typeName => {
+            //     const typeSpan = document.createElement('span');
+            //     typeSpan.textContent = typeName;
+            //     typeSpan.className = `type type-${typeName}`;
+            //     types.appendChild(typeSpan);
+            // });
+            
+            // pokemonCard.appendChild(img);
+            // pokemonCard.appendChild(name);
+            // pokemonCard.appendChild(id);
+            // pokemonCard.appendChild(types);
+
+            const trading = await createPokemon(pokemonId);
+            
+            container.innerHTML = ''; // Clear existing content
+            container.appendChild(trading);
+            // Add catch container
+            // addCatchContainer(trading);
+            
+            const wantToGet = await createPokemon(offer.requestedPokemonId);
+            // Add animation
+            container.appendChild(wantToGet);
+            pokemonCard.style.animation = 'slideIn 0.5s ease-out';
+            
+            container.appendChild(offerDiv);
+        });
+    } catch (error) {
+        console.error('Error loading trade offers:', error);
+    }
+}
+
+async function createPokemon(pokemonId){
+    const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonId}`);
+    const pokemonData = await response.json();
+    console.log("Trying to fetch Pokemon data for ID:",pokemonId);
+    // Extract the data you want to store
+    const pokemonInfo = {
+        pokemonName: pokemonData.name,
+        pokemonImage: pokemonData.sprites.front_default || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${offer.offeredPokemonId}.png`,
+        pokemonId: pokemonData.id,
+        pokemonTypes: pokemonData.types.map(type => type.type.name)
+    };
+    
+    console.log("Fetched Pokemon data:", pokemonInfo);
+    // Store current Pokemon globally
+    currentPokemon = pokemonInfo;
+    
+    // Create Pokemon card with proper rarity
+    const pokemonCard = document.createElement('div');
+    pokemonCard.className = 'pokemon-card';
+    pokemonCard.id = 'current-pokemon';
+    
+    // Set data-id attribute for sorting
+    pokemonCard.dataset.id = pokemonInfo.pokemonId;
+    
+    // Add rarity styling
+    const rarity = getPokemonRarity(pokemonInfo.pokemonId);
+    currentPokemon.rarity = rarity;
+    
+    // Add tooltip for rarity information
+    const tooltip = document.createElement('div');
+    tooltip.className = `tooltip tooltip-${rarity}`;
+    tooltip.textContent = `${rarity.charAt(0).toUpperCase() + rarity.slice(1)} Pokémon`;
+    pokemonCard.appendChild(tooltip);
+    
+    if (rarity !== 'common') {
+        pokemonCard.classList.add(`rarity-${rarity}`);
+        
+        // Add rarity badge
+        const rarityBadge = document.createElement('span');
+        rarityBadge.classList.add('rarity-badge', `rarity-${rarity}-badge`);
+        rarityBadge.textContent = rarity.charAt(0).toUpperCase() + rarity.slice(1);
+        pokemonCard.appendChild(rarityBadge);
+    }
+    
+    const img = document.createElement('img');
+    img.src = pokemonInfo.pokemonImage;
+    img.alt = pokemonInfo.pokemonName;
+    img.className = 'pokemon-image';
+    
+    const name = document.createElement('h3');
+    name.textContent = pokemonInfo.pokemonName.charAt(0).toUpperCase() + pokemonInfo.pokemonName.slice(1);
+    name.className = 'pokemon-name';
+    
+    const id = document.createElement('p');
+    id.textContent = `#${pokemonInfo.pokemonId.toString().padStart(3, '0')}`;
+    id.className = 'pokemon-id';
+    
+    const types = document.createElement('div');
+    types.className = 'pokemon-types';
+    pokemonInfo.pokemonTypes.forEach(typeName => {
+        const typeSpan = document.createElement('span');
+        typeSpan.textContent = typeName;
+        typeSpan.className = `type type-${typeName}`;
+        types.appendChild(typeSpan);
+    });
+    
+    pokemonCard.appendChild(img);
+    pokemonCard.appendChild(name);
+    pokemonCard.appendChild(id);
+    pokemonCard.appendChild(types);
+    return pokemonCard;
+}
 
 async function openMarketModal(){
     try {
