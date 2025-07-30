@@ -228,6 +228,7 @@ app.post('/api/save-pokemon', requireAuth, async (req, res) => {
     }
 });
 
+
 // Modified API endpoint to get Pokemon data (now user-specific)
 app.get('/api/get-pokemon', requireAuth, async (req, res) => {
     try {
