@@ -6,6 +6,7 @@
     <title>Pokemon Summoner</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="card-tilt.css">
+    <link rel="stylesheet" href="chat.css">
 </head>
 <body>
     <div id="authContainer" style="margin-bottom: 20px;">
@@ -27,7 +28,7 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-        <div id="userInfo" style="display:none; margin-bottom: 20px;">
+        <div id="userInfo" style="margin-bottom: 20px;">
             <span>Logged in as: <strong id="currentUser"></strong></span>
         </div>
         <div class="coins-display">
@@ -35,18 +36,16 @@
             <span id="userCoins">500</span> coins
         </div>
         
-        
         <div class="container">
             <h1>🎮 Pokemon Summoner</h1>
             <div class="controls">
                 <button id="summonBtn" onclick="getPokemonImage()">Summon Pokemon</button>
                 <button id="loadBtn" onclick="loadSavedPokemon()">Load Saved</button>
                 <button id="shopBtn" onclick="openShopModal()">Shop</button>
-                <!-- <button id="clearBtn" onclick="clearAllPokemon()">Clear All</button> -->
-                <!-- <button id="toggleDisplayBtn" onclick="togglePokemonDisplay()">Hide Pokemon</button> -->
                 <button id="tradePokemon" onclick="openTradeModal()">Trade</button>
                 <button id="marketPokemon" onclick="openMarketModal()">Market</button>
                 <button id="buddy" onclick="Buddy()">Buddy</button>
+                <button id="globalChatBtn" onclick="toggleGlobalChat()">Global Chat</button> <!-- NEW BUTTON -->
                 <button id="logOut" onclick="logout()">Logout</button>
             </div>
             <div class="sort-controls">
@@ -80,9 +79,21 @@
             </div>
         </div>
 
+        <!--global chat feature - now with an ID and initial hidden class -->
+        <div id="globalChatContainer" class="global-chat hidden">
+            <h3>🌐 Global Chat <span class="close-chat" onclick="toggleGlobalChat()">&times;</span></h3> <!-- Added close button -->
+            <div class="chat-box">
+                 <ul id="chatMessages"></ul>
+            </div>
+            <input id="chatInput" placeholder="Type a message..." />
+            <button onclick="sendChat()">Send</button>
+        </div>
+
     </div>
 
     <script src="script.js"></script>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="chat.js"></script>
 
     <!-- Shop Modal -->
     <div id="shopModal" class="modal hidden">

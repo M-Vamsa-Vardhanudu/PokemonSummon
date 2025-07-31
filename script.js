@@ -9,24 +9,54 @@ let pokeballInventory = {
 };
 
 // Global variable for user coins
-// let userCoins = 500; // Starting amount
+let userCoins = 500; // Starting amount
 
 // let loadCoins = loadCoins();
 
 async function loadCoins() {
     try {
-        const response = await fetch('/api/coins');
+        const response = await fetch('/api/coins', {
+            credentials: 'include' // Include session cookies
+        });
+        
         if (!response.ok) {
+            if (response.status === 401) {
+                console.log('User not authenticated, showing auth interface');
+                showAuthInterface();
+                return;
+            }
             throw new Error(`Failed to fetch coins: ${response.statusText}`);
         }
 
         const data = await response.json();
         userCoins = data.coins || 0; // Update the global `userCoins` variable
         updateCoinsDisplay(); // Update the UI with the fetched coins
+        console.log('Coins loaded successfully:', userCoins);
     } catch (error) {
         console.error('Error loading coins:', error);
-        userCoins = -100; // Default to 0 coins if the request fails
+        userCoins = 500; // Default starting amount if request fails
         updateCoinsDisplay();
+    }
+}
+
+// Global Chat Toggle Function
+function toggleGlobalChat() {
+    const chatContainer = document.getElementById('globalChatContainer');
+    
+    if (chatContainer.classList.contains('hidden')) {
+        // Show the chat
+        chatContainer.classList.remove('hidden');
+        setTimeout(() => {
+            chatContainer.classList.add('open');
+        }, 10);
+        console.log('Global chat opened');
+    } else {
+        // Hide the chat
+        chatContainer.classList.remove('open');
+        setTimeout(() => {
+            chatContainer.classList.add('hidden');
+        }, 300);
+        console.log('Global chat closed');
     }
 }
 
@@ -787,6 +817,10 @@ function showGameInterface(username) {
     document.getElementById('currentUser').textContent = username;
     const userInfo = document.getElementById('userInfo');
     userInfo.style.display = 'block';
+    
+    // Load coins after showing the game interface
+    loadCoins();
+    
     setTimeout(() => {
         userInfo.style.display = 'none';
     }, 3000); // Hide user info after 3 seconds
@@ -806,6 +840,21 @@ async function register() {
     const username = document.getElementById('registerUsername').value;
     const password = document.getElementById('registerPassword').value;
     
+    if (!username || !password) {
+        alert('Please enter both username and password');
+        return;
+    }
+
+    if (username.length < 3) {
+        alert('Username must be at least 3 characters long');
+        return;
+    }
+
+    if (password.length < 6) {
+        alert('Password must be at least 6 characters long');
+        return;
+    }
+    
     try {
         const response = await fetch('/api/register', {
             method: 'POST',
@@ -818,38 +867,52 @@ async function register() {
         if (data.success) {
             alert('Registration successful! Please login.');
             showLogin();
+            // Clear the form fields
+            document.getElementById('registerUsername').value = '';
+            document.getElementById('registerPassword').value = '';
         } else {
-            alert(data.message);
+            alert(data.message || 'Registration failed');
         }
     } catch (error) {
         console.error('Registration failed:', error);
-        alert('Registration failed');
+        alert('Registration failed. Please check if the server is running.');
     }
 }
 
 async function login() {
-    const username = document.getElementById('loginUsername').value;
-    const password = document.getElementById('loginPassword').value;
-    
+    const username = document.getElementById("loginUsername").value;
+    const password = document.getElementById("loginPassword").value;
+
+    if (!username || !password) {
+        alert('Please enter both username and password');
+        return;
+    }
+
     try {
         const response = await fetch('/api/login', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include', // Enable cookies/session
             body: JSON.stringify({ username, password })
         });
-        
+
         const data = await response.json();
-        
+
         if (data.success) {
+            console.log("Login successful:", data);
             showGameInterface(data.username);
+            loadCoins(); // Load user's coins after login
         } else {
-            alert(data.message);
+            alert(data.message || 'Login failed');
         }
     } catch (error) {
-        console.error('Login failed:', error);
-        alert('Login failed');
+        console.error("Login error:", error);
+        alert("An error occurred while logging in. Please check if the server is running.");
     }
 }
+
 
 async function logout() {
     try {
@@ -1165,15 +1228,14 @@ function clearAllPokemon() {
 // Initialize event listeners when document loads
 document.addEventListener('DOMContentLoaded', async function () {
     try {
-        await checkAuth();         // Wait for authentication check
-        await loadCoins();         // Only then load coins
+        await checkAuth();         // Check authentication first
+        updateBallCounts();
+        initCardTiltEffect();
     } catch (error) {
-        console.error("User not authenticated:", error);
-        window.location.href = '/login';  // or your login page
+        console.error("Initialization error:", error);
+        // Don't redirect, just show auth interface
+        showAuthInterface();
     }
-
-    updateBallCounts();
-    initCardTiltEffect();
 });
 
 
