@@ -63,6 +63,28 @@ app.post('/api/trade-offer', requireAuth, async (req, res) => {
     }
 });
 
+// Endpoint to get userId by username
+app.get('/api/user-by-username/:username', async (req, res) => {
+    try {
+        const username = req.params.username;
+        const user = await db.collection('users').findOne({ username: username });
+        
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+        
+        // Only send non-sensitive user info
+        res.json({ 
+            success: true, 
+            userId: user._id.toString(),
+            username: user.username
+        });
+    } catch (error) {
+        console.error("Error fetching user by username:", error);
+        res.status(500).json({ success: false, message: "Failed to fetch user" });
+    }
+});
+
 app.get('/api/trade-offers', requireAuth, async (req, res) => {
     try {
         const tradeOffers = await db.collection('trades').find({
@@ -81,37 +103,69 @@ app.get('/api/trade-offers', requireAuth, async (req, res) => {
 app.post('/api/trade-accept/:tradeId', requireAuth, async (req, res) => {
     const { tradeId } = req.params;
     try {
+        console.log("Accepting trade:", tradeId);
+
         const trade = await db.collection('trades').findOne({ _id: new ObjectId(tradeId), status: "pending" });
+        console.log("Trade found:", trade);
+
         if (!trade) return res.status(404).json({ success: false, message: "Trade not found" });
 
         // Check if current user is the recipient
-        if (trade.toUserId && trade.toUserId != req.session.userId) {
+        if (trade.toUserId && trade.toUserId != req.session.userId.toString()) {
+            console.log("Not authorized: trade.toUserId =", trade.toUserId, "session.userId =", req.session.userId);
             return res.status(403).json({ success: false, message: "Not authorized" });
         }
 
-        // Transfer Pokémon
-        await db.collection('pokemonCollection').updateOne(
-            { id: trade.offeredPokemonId, userId: trade.fromUserId },
-            { $set: { userId: req.session.userId } }
+        // Convert IDs to correct types
+        const offeredPokemonId = typeof trade.offeredPokemonId === 'number'
+            ? trade.offeredPokemonId
+            : parseInt(trade.offeredPokemonId, 10);
+        const requestedPokemonId = trade.requestedPokemonId
+            ? (typeof trade.requestedPokemonId === 'number'
+                ? trade.requestedPokemonId
+                : parseInt(trade.requestedPokemonId, 10))
+            : null;
+        const fromUserId = trade.fromUserId.toString();
+        const toUserId = trade.toUserId.toString();
+
+        console.log("offeredPokemonId:", offeredPokemonId, "fromUserId:", fromUserId, "toUserId:", toUserId);
+
+        // Transfer offered Pokémon to recipient
+        const offerResult = await db.collection('pokemonCollection').updateOne(
+            { id: offeredPokemonId, userId: fromUserId },
+            { $set: { userId: toUserId } }
         );
-        if (trade.requestedPokemonId) {
-            await db.collection('pokemonCollection').updateOne(
-                { id: trade.requestedPokemonId, userId: req.session.userId },
-                { $set: { userId: trade.fromUserId } }
+        console.log("Offer update result:", offerResult);
+
+        // If a requested Pokémon was specified, transfer it to the sender
+        let requestResult = null;
+        if (requestedPokemonId) {
+            requestResult = await db.collection('pokemonCollection').updateOne(
+                { id: requestedPokemonId, userId: toUserId },
+                { $set: { userId: fromUserId } }
             );
+            console.log("Request update result:", requestResult);
         }
 
         // Update trade status
-        await db.collection('trades').updateOne(
+        const tradeUpdateResult = await db.collection('trades').updateOne(
             { _id: new ObjectId(tradeId) },
             { $set: { status: "accepted", acceptedAt: new Date() } }
         );
-        res.json({ success: true, message: "Trade completed" });
+        console.log("Trade status update result:", tradeUpdateResult);
+
+        res.json({ 
+            success: true, 
+            message: "Trade completed",
+            offerUpdate: offerResult,
+            requestUpdate: requestResult,
+            tradeUpdate: tradeUpdateResult
+        });
     } catch (error) {
+        console.error("Error accepting trade:", error);
         res.status(500).json({ success: false, message: "Failed to accept trade" });
     }
 });
-
 // User registration endpoint
 app.post('/api/register', async (req, res) => {
     try {
@@ -436,6 +490,33 @@ app.post('/api/update-pokeballs', async (req, res) => {
     }
 });
 
+// Add this to your node.js file
+
+// Endpoint to reject a trade offer
+app.post('/api/trade-reject/:tradeId', requireAuth, async (req, res) => {
+    const { tradeId } = req.params;
+    try {
+        const trade = await db.collection('trades').findOne({ _id: new ObjectId(tradeId), status: "pending" });
+        if (!trade) return res.status(404).json({ success: false, message: "Trade not found" });
+
+        // Check if current user is the recipient
+        if (trade.toUserId && trade.toUserId != req.session.userId) {
+            return res.status(403).json({ success: false, message: "Not authorized" });
+        }
+
+        // Update trade status
+        await db.collection('trades').updateOne(
+            { _id: new ObjectId(tradeId) },
+            { $set: { status: "rejected", rejectedAt: new Date() } }
+        );
+        res.json({ success: true, message: "Trade rejected" });
+    } catch (error) {
+        console.error("Error rejecting trade:", error);
+        res.status(500).json({ success: false, message: "Failed to reject trade" });
+    }
+});
+
+
 // Get Poké Ball inventory
 // const { ObjectId } = require('mongodb');
 
@@ -485,14 +566,35 @@ app.get('/api/get-pokeballs', async (req, res) => {
     }
   });
   
-
+// Endpoint to get username by ID
+app.get('/api/user/:id', async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
+        
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+        
+        // Only send non-sensitive user info
+        res.json({ 
+            success: true, 
+            userId: user._id.toString(),
+            username: user.username
+        });
+    } catch (error) {
+        console.error("Error fetching user:", error);
+        res.status(500).json({ success: false, message: "Failed to fetch user" });
+    }
+});
 
 // Get current user info
 app.get('/api/user', (req, res) => {
     if (req.session.userId) {
         res.json({ 
             loggedIn: true, 
-            username: req.session.username 
+            username: req.session.username,
+            userId: req.session.userId.toString()
         });
     } else {
         res.json({ loggedIn: false });
@@ -560,6 +662,58 @@ app.post('/api/buy-pokemon/:id', requireAuth, async(req, res) => {
         res.status(500).json({ success: false, error: "Failed to buy Pokemon" });
     }
 });
+
+// Add this endpoint to fetch a single Pokemon by ID
+app.get('/api/pokemon/:id', async (req, res) => {
+    try {
+        const pokemonId = req.params.id;
+        
+        // First try to find in user's collection - try both string and integer formats
+        let pokemon = await db.collection('pokemonCollection').findOne({ 
+            $or: [
+                { id: pokemonId },               // Original string format ("011")
+                { id: parseInt(pokemonId, 10) }  // Integer format (11)
+            ]
+        });
+        
+        // If not found in user collection, try market collection
+        if (!pokemon) {
+            pokemon = await db.collection('marketCollection').findOne({ 
+                $or: [
+                    { id: pokemonId },
+                    { id: parseInt(pokemonId, 10) }
+                ]
+            });
+        }
+        
+        // If still not found, fetch from PokeAPI
+        if (!pokemon) {
+            // Convert ID to number format for PokeAPI (removes leading zeros)
+            const pokeApiId = parseInt(pokemonId, 10).toString();
+            
+            const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokeApiId}`);
+            if (!response.ok) {
+                return res.status(404).json({ success: false, message: "Pokemon not found" });
+            }
+            
+            const data = await response.json();
+            
+            // Convert PokeAPI format to our format
+            pokemon = {
+                id: pokemonId, // Keep the original ID format
+                name: data.name,
+                image: data.sprites.front_default,
+                types: data.types.map(t => t.type.name)
+            };
+        }
+        
+        res.json(pokemon);
+    } catch (error) {
+        console.error("Error fetching Pokemon by ID:", error);
+        res.status(500).json({ success: false, error: "Failed to fetch Pokemon" });
+    }
+});
+
 
 app.put('/api/market-pokemon/:id', requireAuth, async(req, res) => {
     try {

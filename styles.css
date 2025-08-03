@@ -67,11 +67,20 @@ h1 {
     display: flex;
 }
 .modal-content {
-    background: #fff;
-    padding: 30px 40px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
     border-radius: 20px;
-    text-align: center;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    width: 90%;
+    max-width: 600px;
+    /* Remove fixed max-height and overflow-y */
+    box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+    transform: translateY(-20px);
+    transition: transform 0.3s;
+    position: relative;
+    /* NEW: */
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh; /* Only limit if needed */
+    overflow: visible; /* Only scroll if needed */
 }
 .market.hidden { display: none; }
 .market.active { display: block; }
@@ -1204,6 +1213,308 @@ button[type="submit"]:hover {
 
 .modal-body {
     padding: 20px;
+    /* NEW: */
+    overflow-y: auto;
+    max-height: 60vh; /* Adjust as needed for your design */
+}
+
+/* Trade Offers Styling */
+#tradeOffersContainer {
+    margin: 20px auto;
+    max-width: 800px;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.trade-section {
+    margin: 30px auto;
+    max-width: 850px;
+    text-align: center;
+}
+
+.trade-section h2 {
+    color: white;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    font-size: 2rem;
+}
+
+.trade-controls {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.trade-btn {
+    background: linear-gradient(45deg, #3b4cca, #5a68d4);
+    border: none;
+    padding: 12px 25px;
+    border-radius: 50px;
+    color: white;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.trade-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+    background: linear-gradient(45deg, #2a3ba8, #4957c2);
+}
+
+.loading-trades {
+    color: white;
+    text-align: center;
+    padding: 20px;
+    font-style: italic;
+}
+
+.trade-offer-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 25px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.trade-offer-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.08));
+}
+
+.trade-details {
+    margin-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    padding-bottom: 15px;
+}
+
+.trade-details h3 {
+    margin-top: 0;
+    color: #ffcb05;
+    font-size: 1.4rem;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.trade-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.trade-pokemon {
+    flex: 1;
+    min-width: 150px;
+    position: relative;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 15px;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.trade-pokemon img {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+    margin-bottom: 10px;
+    filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.3));
+}
+
+.trade-pokemon .label {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+    z-index: 2;
+}
+
+.offered .label {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.requested .label {
+    background-color: #2196F3;
+    color: white;
+}
+
+.exchange-icon {
+    font-size: 30px;
+    color: white;
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+}
+
+.trade-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 15px;
+    position: relative;
+    z-index: 10;
+}
+
+.accept-trade, .reject-trade {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 30px;
+    font-weight: bold;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    display: inline-block;
+    min-width: 100px;
+    position: relative;
+    z-index: 15;
+}
+
+.accept-trade {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.accept-trade:hover {
+    background-color: #3e8e41;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.reject-trade {
+    background-color: #f44336;
+    color: white;
+}
+
+.reject-trade:hover {
+    background-color: #d32f2f;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.awaiting {
+    color: #ffcb05;
+    font-style: italic;
+    text-align: center;
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+}
+
+.status {
+    font-weight: bold;
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 15px;
+}
+
+.status.pending {
+    color: #ffcb05;
+    background-color: rgba(255, 203, 5, 0.2);
+}
+
+.status.accepted {
+    color: #4caf50;
+    background-color: rgba(76, 175, 80, 0.2);
+}
+
+.status.rejected {
+    color: #f44336;
+    background-color: rgba(244, 67, 54, 0.2);
+}
+
+.placeholder {
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.error {
+    color: #f44336;
+    text-align: center;
+    padding: 10px;
+    margin: 10px 0;
+    background-color: rgba(244, 67, 54, 0.1);
+    border-radius: 8px;
+}
+
+.placeholder {
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 5px;
+    margin-bottom: 10px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.accept-trade, .reject-trade {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 30px;
+    font-weight: bold;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    /* Add these properties for better visibility */
+    display: inline-block;
+    min-width: 100px;
+    z-index: 5;
+}
+
+.accept-trade {
+    background-color: #4caf50;
+    color: white;
+}
+
+.reject-trade {
+    background-color: #f44336;
+    color: white;
+}
+
+.awaiting {
+    color: #ffcb05;
+    font-style: italic;
+    text-align: center;
+}
+
+.no-trades {
+    text-align: center;
+    color: white;
+    font-style: italic;
+}
+
+.error {
+    color: #f44336;
+    text-align: center;
+}
+
+.error {
+    color: #f44336;
+    text-align: center;
+    padding: 10px;
 }
 
 .shop-item {
@@ -1212,6 +1523,10 @@ button[type="submit"]:hover {
     padding: 15px;
     border-bottom: 1px solid rgba(0,0,0,0.1);
     transition: background-color 0.2s;
+}
+
+body.modal-open {
+    overflow: hidden;
 }
 
 .shop-item:hover {
