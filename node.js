@@ -516,10 +516,6 @@ app.post('/api/trade-reject/:tradeId', requireAuth, async (req, res) => {
     }
 });
 
-
-// Get Poké Ball inventory
-// const { ObjectId } = require('mongodb');
-
 app.get('/api/get-pokeballs', async (req, res) => {
     try {
       const { userId } = req.session;
