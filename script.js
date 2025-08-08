@@ -1,6 +1,8 @@
 // Global variables for pokeballs and currently summoned pokemon
 let selectedPokeball = null;
 let currentPokemon = null;
+let buddye = null;
+let buddy = null;
 let pokeballInventory = {
     pokeball: 0,
     greatball: 0,
@@ -367,6 +369,32 @@ async function openTradeModal() {
         });
     });
 }
+
+async function expUpdate(pokemonID, expp) {
+    // const pokemonId = pokemon.querySelector('.pokemon-id').textContent.replace('#', '');
+    console.log("Updating EXP for Pokemon ID:", pokemonID, "to", expp);
+    
+    try {
+        const response = await fetch(`/api/exp-update`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                pokemonId: pokemonID, 
+                exp: expp 
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Failed to update EXP: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log("EXP updated successfully:", data);
+    } catch (error) {
+        console.error("Error updating EXP:", error);
+    }
+}
+
 
 const tradePokemon = async (pokemonCard) => {
     const pokemon = pokemonCard;
@@ -1496,6 +1524,8 @@ async function loadbuddy(){
 
         const data = await response.json();
         buddy = data.buddy || null; // Update the global `buddy` variable
+        buddye = buddy.id;
+        // console.log("Buddy loaded:", buddy.id);
         updatebuddyinDB(Buddy);
     }
     catch(error){
@@ -1529,6 +1559,14 @@ async function updatebuddyinDB(buddy) {
         console.error('Error updating buddy in DB:', error);
     }
 }
+
+
+// async function getBuddyId() {
+//     const buddyId = await loadbuddy();
+//     console.log("Buddy ID:", buddyId);
+//     return buddyId;
+// }
+
 
 
 async function register() {
@@ -1716,7 +1754,8 @@ const Buddy = async () => {
 
                
                 if (buddyCard === card) {
-                    card.classList.remove('buddy-selected');
+                    // card.classList.remove('buddy-selected');
+                    updatebuddyinDB(null);
                     buddyCard = null;
                     alert(`${name} is no longer your buddy!`);
                     console.log('Buddy removed');
@@ -1725,23 +1764,24 @@ const Buddy = async () => {
 
               
                 if (buddyCard) {
-                    buddyCard.classList.remove('buddy-selected');
+                    // buddyCard.classList.remove('buddy-selected');
+                    updatebuddyinDB(null);
                 }
 
                 
-                loaded.forEach(c => c.classList.remove('buddy-selected'));
+                // loaded.forEach(c => c.classList.remove('buddy-selected'));
 
               
                 buddyCard = card;
-                card.classList.add('buddy-selected');
+                // card.classList.add('buddy-selected');
+                updatebuddyinDB(card.dataset.id);
                 alert(`You have selected ${name} as your buddy!`);
                 console.log('Buddy selected:', name);
             });
         });
-
-    } catch (error) {
-        console.error('Error loading saved Pokemon:', error);
-    }
+        }catch(error){
+                console.error("Error selecting buddy:", error);
+            }
 };
 
 
@@ -1842,13 +1882,16 @@ function awardCoinsForCatch(rarity) {
 }
 
 // Update the catchSuccess function to award coins
-function catchSuccess() {
+ async function catchSuccess() {
     // Save Pokemon to database
     savePokemonToDB(currentPokemon);
+    // const bud = getBuddyId();
+    // console.log(bud);
     
     // Award coins based on rarity
     const coinsEarned = awardCoinsForCatch(currentPokemon.rarity);
     
+
     // Show success message
     const resultDiv = document.getElementById('catch-result');
     resultDiv.className = 'catch-result success';
@@ -2020,4 +2063,6 @@ function applyCardTiltEffect(card) {
         this.classList.remove('tilting');
         this.style.transform = 'perspective(1000px) rotateX(0) rotateY(0)';
     });
+
+   
 }
