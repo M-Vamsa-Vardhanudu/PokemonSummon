@@ -1524,16 +1524,30 @@ async function loadbuddy(){
 
         const data = await response.json();
         buddy = data.buddy || null; // Update the global `buddy` variable
-        buddye = buddy.id;
+        // buddye = buddy.id;
         // console.log("Buddy loaded:", buddy.id);
-        updatebuddyinDB(Buddy);
+        updatebuddyinDB(buddy);
     }
     catch(error){
         console.error("Error loading buddy:",error);
         buddy = null; // Default to no buddy if the request fails
-        updatebuddyinDB(Buddy);
+        updatebuddyinDB(buddy);
     }
 }
+
+let buddyLoaded = false;
+
+async function getBuddyIdInt() {
+    // If buddy is not loaded, fetch it once
+    if (!buddyLoaded || buddy == null) {
+        await loadbuddy();
+        buddyLoaded = true;
+    }
+
+    // Convert to integer
+    return buddy !== null ? parseInt(buddy, 10) : null;
+}
+
 
 async function updatebuddyinDB(buddy) {
     console.log('Updating buddy in DB:', buddy);
@@ -1885,12 +1899,16 @@ function awardCoinsForCatch(rarity) {
  async function catchSuccess() {
     // Save Pokemon to database
     savePokemonToDB(currentPokemon);
-    // const bud = getBuddyId();
-    // console.log(bud);
+    
     
     // Award coins based on rarity
     const coinsEarned = awardCoinsForCatch(currentPokemon.rarity);
     
+    (async () => {
+        const buddyId = await getBuddyIdInt(); 
+        console.log("Buddy ID:", buddyId); // e.g., 77
+        expUpdate(buddyId, 20); // Award 10 EXP to the buddy
+    })();
 
     // Show success message
     const resultDiv = document.getElementById('catch-result');
