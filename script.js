@@ -747,7 +747,6 @@ async function acceptTradeOffer(tradeId) {
         
         if (result.success) {
             showNotification('Trade completed successfully!', 'success');
-            // Reload trade offers to update UI
             await loadTradablePokemon();
         } else {
             showNotification(`Failed to accept trade: ${result.message}`, 'error');
@@ -1765,24 +1764,6 @@ function closeShopModal() {
     }, 300);
 }
 
-// function buyPokeball(ballType, price) {
-//     if (userCoins >= price) {
-//         // Deduct coins
-//         userCoins -= price;
-//         updateCoinsDisplay();
-        
-//         // Add to inventory
-//         pokeballInventory[ballType]++;
-//         updateBallCounts();
-        
-//         // Show success message
-//         showNotification(`Successfully purchased 1 ${formatBallName(ballType)}!`, 'success');
-//     } else {
-//         // Show insufficient funds message
-//         showNotification(`Not enough coins! You need ${price - userCoins} more coins.`, 'error');
-//     }
-// }
-
 function showNotification(message, type) {
     // Create notification element if it doesn't exist
     let notification = document.querySelector('.notification');
@@ -1899,27 +1880,6 @@ function updateBallCounts() {
     }
 }
 
-// Function to clear all Pokemon
-function clearAllPokemon() {
-    const pokemonContainer = document.getElementById('pokemonContainer');
-    pokemonContainer.innerHTML = '';
-    
-    // Clear local storage if you're storing Pokemon there
-    localStorage.removeItem('savedPokemon');
-    
-    // Optionally display a message
-    const message = document.createElement('p');
-    message.textContent = 'All Pokemon have been cleared!';
-    message.className = 'clear-message';
-    pokemonContainer.appendChild(message);
-    
-    // Remove the message after 3 seconds
-    setTimeout(() => {
-        if (pokemonContainer.contains(message)) {
-            pokemonContainer.removeChild(message);
-        }
-    }, 3000);
-}
 
 // Initialize event listeners when document loads
 document.addEventListener('DOMContentLoaded', async function () {
@@ -2021,3 +1981,34 @@ function applyCardTiltEffect(card) {
         this.style.transform = 'perspective(1000px) rotateX(0) rotateY(0)';
     });
 }
+
+// Inject Raid launcher button (optional integration)
+document.addEventListener('DOMContentLoaded', () => {
+    injectRaidLauncher();
+});
+
+function injectRaidLauncher() {
+    const controlsHost = document.querySelector('.controls') || document.getElementById('gameContainer');
+    if (!controlsHost) return;
+    if (document.getElementById('raidLaunchBtn')) return;
+    const btn = document.createElement('button');
+    btn.id = 'raidLaunchBtn';
+    btn.textContent = 'Raid Battle';
+    btn.style.background = 'linear-gradient(45deg,#7038F8,#a371ff)';
+    btn.addEventListener('click', () => {
+        // Open battle simulator with raid UI (team selection happens there)
+        window.open('trail.html#raid', '_blank');
+    });
+    controlsHost.appendChild(btn);
+}
+
+(function addRaidOpenButton(){
+    const host = document.querySelector('.controls') || document.body;
+    if (!host || document.getElementById('openRaidBtn')) return;
+    const btn = document.createElement('button');
+    btn.id = 'openRaidBtn';
+    btn.textContent = 'Open Raid Battles';
+    btn.style.background = 'linear-gradient(45deg,#7038F8,#a371ff)';
+    btn.addEventListener('click', ()=> window.open('trail.html#raid','_blank'));
+    host.appendChild(btn);
+})();
