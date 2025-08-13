@@ -40,29 +40,6 @@ async function connectDB() {
 
 connectDB();
 
-app.post('/api/exp-update',requireAuth,async (req, res) => {
-
-    const { pokemonId, exp } = req.body;
-    if (!pokemonId || typeof exp !== 'number') {
-        return res.status(400).json({ success: false, message: "Invalid request data" });
-    }
-    try {
-        const result = await db.collection('pokemonCollection').updateOne(
-            { id: pokemonId, userId: req.session.userId },
-            { $inc: { exp: exp } }
-        );
-
-        if (result.modifiedCount === 0) {
-            return res.status(404).json({ success: false, message: "Pokemon not found or no changes made" });
-        }
-
-        res.json({ success: true, message: "Experience updated successfully" });
-    } catch (error) {
-        console.error("Error updating experience:", error);
-        res.status(500).json({ success: false, error: "Failed to update experience" });
-    }
-});
-
 app.post('/api/trade-offer', requireAuth, async (req, res) => {
     console.log("Received trade offer request:", req.body);
     const { toUserId, offeredPokemonId, requestedPokemonId } = req.body;
@@ -288,8 +265,7 @@ app.post('/api/save-pokemon', requireAuth, async (req, res) => {
             id: pokemonId,
             types: pokemonTypes,
             rarity: rarity || 'common', // Include rarity info
-            capturedAt: new Date(),
-            exp:0
+            capturedAt: new Date()
         };
         
         const result = await db.collection('pokemonCollection').insertOne(pokemonData);
@@ -446,6 +422,29 @@ app.post('/api/update-buddy', requireAuth, async (req, res) => {
     } catch (error) {
         console.error("Error updating buddy:", error);
         res.status(500).json({ success: false, error: "Failed to update buddy" });
+    }
+});
+
+app.post('/api/exp-update',requireAuth,async (req, res) => {
+
+    const { pokemonId, exp } = req.body;
+    if (!pokemonId || typeof exp !== 'number') {
+        return res.status(400).json({ success: false, message: "Invalid request data" });
+    }
+    try {
+        const result = await db.collection('pokemonCollection').updateOne(
+            { id: pokemonId, userId: req.session.userId },
+            { $inc: { exp: exp } }
+        );
+
+        if (result.modifiedCount === 0) {
+            return res.status(404).json({ success: false, message: "Pokemon not found or no changes made" });
+        }
+
+        res.json({ success: true, message: "Experience updated successfully" });
+    } catch (error) {
+        console.error("Error updating experience:", error);
+        res.status(500).json({ success: false, error: "Failed to update experience" });
     }
 });
 

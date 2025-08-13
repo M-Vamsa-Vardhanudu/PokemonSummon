@@ -370,32 +370,6 @@ async function openTradeModal() {
     });
 }
 
-async function expUpdate(pokemonID, expp) {
-    // const pokemonId = pokemon.querySelector('.pokemon-id').textContent.replace('#', '');
-    console.log("Updating EXP for Pokemon ID:", pokemonID, "to", expp);
-    
-    try {
-        const response = await fetch(`/api/exp-update`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                pokemonId: pokemonID, 
-                exp: expp 
-            })
-        });
-        
-        if (!response.ok) {
-            throw new Error(`Failed to update EXP: ${response.statusText}`);
-        }
-        
-        const data = await response.json();
-        console.log("EXP updated successfully:", data);
-    } catch (error) {
-        console.error("Error updating EXP:", error);
-    }
-}
-
-
 const tradePokemon = async (pokemonCard) => {
     const pokemon = pokemonCard;
     const idelm = pokemonCard.querySelector('.pokemon-id');
@@ -775,7 +749,6 @@ async function acceptTradeOffer(tradeId) {
         
         if (result.success) {
             showNotification('Trade completed successfully!', 'success');
-            // Reload trade offers to update UI
             await loadTradablePokemon();
         } else {
             showNotification(`Failed to accept trade: ${result.message}`, 'error');
@@ -1524,30 +1497,14 @@ async function loadbuddy(){
 
         const data = await response.json();
         buddy = data.buddy || null; // Update the global `buddy` variable
-        // buddye = buddy.id;
-        // console.log("Buddy loaded:", buddy.id);
-        updatebuddyinDB(buddy);
+        updatebuddyinDB(Buddy);
     }
     catch(error){
         console.error("Error loading buddy:",error);
         buddy = null; // Default to no buddy if the request fails
-        updatebuddyinDB(buddy);
+        updatebuddyinDB(Buddy);
     }
 }
-
-
-
-async function getBuddyIdInt() {
-    // If buddy is not loaded, fetch it once
-    if (!buddyLoaded || buddy == null) {
-        await loadbuddy();
-        buddyLoaded = true;
-    }
-
-    // Convert to integer
-    return buddy !== null ? parseInt(buddy, 10) : null;
-}
-
 
 async function updatebuddyinDB(buddy) {
     console.log('Updating buddy in DB:', buddy);
@@ -1574,13 +1531,43 @@ async function updatebuddyinDB(buddy) {
     }
 }
 
+async function expUpdate(pokemonID, expp) {
+    // const pokemonId = pokemon.querySelector('.pokemon-id').textContent.replace('#', '');
+    console.log("Updating EXP for Pokemon ID:", pokemonID, "to", expp);
+    
+    try {
+        const response = await fetch('/api/exp-update',{
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                pokemonId: pokemonID, 
+                exp: expp 
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Failed to update EXP: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log("EXP updated successfully:", data);
+    } catch (error) {
+        console.error("Error updating EXP:", error);
+    }
+}
 
-// async function getBuddyId() {
-//     const buddyId = await loadbuddy();
-//     console.log("Buddy ID:", buddyId);
-//     return buddyId;
-// }
 
+
+async function getBuddyIdInt() {
+    // If buddy is not loaded, fetch it once
+    if (buddy == null) {
+        await loadbuddy();
+       
+    }
+
+    // Convert to integer
+    return buddy !== null ? parseInt(buddy, 10) : null;
+}
 
 
 async function register() {
@@ -1768,8 +1755,7 @@ const Buddy = async () => {
 
                
                 if (buddyCard === card) {
-                    // card.classList.remove('buddy-selected');
-                    updatebuddyinDB(null);
+                    card.classList.remove('buddy-selected');
                     buddyCard = null;
                     alert(`${name} is no longer your buddy!`);
                     console.log('Buddy removed');
@@ -1778,24 +1764,23 @@ const Buddy = async () => {
 
               
                 if (buddyCard) {
-                    // buddyCard.classList.remove('buddy-selected');
-                    updatebuddyinDB(null);
+                    buddyCard.classList.remove('buddy-selected');
                 }
 
                 
-                // loaded.forEach(c => c.classList.remove('buddy-selected'));
+                loaded.forEach(c => c.classList.remove('buddy-selected'));
 
               
                 buddyCard = card;
-                // card.classList.add('buddy-selected');
-                updatebuddyinDB(card.dataset.id);
+                card.classList.add('buddy-selected');
                 alert(`You have selected ${name} as your buddy!`);
                 console.log('Buddy selected:', name);
             });
         });
-        }catch(error){
-                console.error("Error selecting buddy:", error);
-            }
+
+    } catch (error) {
+        console.error('Error loading saved Pokemon:', error);
+    }
 };
 
 
@@ -1818,24 +1803,6 @@ function closeShopModal() {
         modal.classList.add('hidden');
     }, 300);
 }
-
-// function buyPokeball(ballType, price) {
-//     if (userCoins >= price) {
-//         // Deduct coins
-//         userCoins -= price;
-//         updateCoinsDisplay();
-        
-//         // Add to inventory
-//         pokeballInventory[ballType]++;
-//         updateBallCounts();
-        
-//         // Show success message
-//         showNotification(`Successfully purchased 1 ${formatBallName(ballType)}!`, 'success');
-//     } else {
-//         // Show insufficient funds message
-//         showNotification(`Not enough coins! You need ${price - userCoins} more coins.`, 'error');
-//     }
-// }
 
 function showNotification(message, type) {
     // Create notification element if it doesn't exist
@@ -1896,20 +1863,19 @@ function awardCoinsForCatch(rarity) {
 }
 
 // Update the catchSuccess function to award coins
- async function catchSuccess() {
+function catchSuccess() {
     // Save Pokemon to database
     savePokemonToDB(currentPokemon);
     
-    
     // Award coins based on rarity
     const coinsEarned = awardCoinsForCatch(currentPokemon.rarity);
-    
+
     (async () => {
         const buddyId = await getBuddyIdInt(); 
         console.log("Buddy ID:", buddyId); // e.g., 77
         expUpdate(buddyId, 20); // Award 10 EXP to the buddy
     })();
-
+    
     // Show success message
     const resultDiv = document.getElementById('catch-result');
     resultDiv.className = 'catch-result success';
@@ -1960,27 +1926,6 @@ function updateBallCounts() {
     }
 }
 
-// Function to clear all Pokemon
-function clearAllPokemon() {
-    const pokemonContainer = document.getElementById('pokemonContainer');
-    pokemonContainer.innerHTML = '';
-    
-    // Clear local storage if you're storing Pokemon there
-    localStorage.removeItem('savedPokemon');
-    
-    // Optionally display a message
-    const message = document.createElement('p');
-    message.textContent = 'All Pokemon have been cleared!';
-    message.className = 'clear-message';
-    pokemonContainer.appendChild(message);
-    
-    // Remove the message after 3 seconds
-    setTimeout(() => {
-        if (pokemonContainer.contains(message)) {
-            pokemonContainer.removeChild(message);
-        }
-    }, 3000);
-}
 
 // Initialize event listeners when document loads
 document.addEventListener('DOMContentLoaded', async function () {
@@ -2081,6 +2026,35 @@ function applyCardTiltEffect(card) {
         this.classList.remove('tilting');
         this.style.transform = 'perspective(1000px) rotateX(0) rotateY(0)';
     });
-
-   
 }
+
+// Inject Raid launcher button (optional integration)
+document.addEventListener('DOMContentLoaded', () => {
+    injectRaidLauncher();
+});
+
+function injectRaidLauncher() {
+    const controlsHost = document.querySelector('.controls') || document.getElementById('gameContainer');
+    if (!controlsHost) return;
+    if (document.getElementById('raidLaunchBtn')) return;
+    const btn = document.createElement('button');
+    btn.id = 'raidLaunchBtn';
+    btn.textContent = 'Raid Battle';
+    btn.style.background = 'linear-gradient(45deg,#7038F8,#a371ff)';
+    btn.addEventListener('click', () => {
+        // Open battle simulator with raid UI (team selection happens there)
+        window.open('trail.html#raid', '_blank');
+    });
+    controlsHost.appendChild(btn);
+}
+
+(function addRaidOpenButton(){
+    const host = document.querySelector('.controls') || document.body;
+    if (!host || document.getElementById('openRaidBtn')) return;
+    const btn = document.createElement('button');
+    btn.id = 'openRaidBtn';
+    btn.textContent = 'Open Raid Battles';
+    btn.style.background = 'linear-gradient(45deg,#7038F8,#a371ff)';
+    btn.addEventListener('click', ()=> window.open('trail.html#raid','_blank'));
+    host.appendChild(btn);
+})();
