@@ -1593,4 +1593,9 @@ body.modal-open {
     display: none !important;
 }
 
+.team-switch-bar { margin-top:10px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
+.team-switch-btn { background:#3498db; padding:6px 10px; border-radius:6px; font-size:12px; cursor:pointer; }
+.team-switch-btn.active { background:#1b6fa3; color:#fff; }
+.team-switch-btn:disabled { background:#7f8c8d; cursor:not-allowed; }
+
 

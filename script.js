@@ -1535,7 +1535,7 @@ async function loadbuddy(){
     }
 }
 
-let buddyLoaded = false;
+
 
 async function getBuddyIdInt() {
     // If buddy is not loaded, fetch it once
