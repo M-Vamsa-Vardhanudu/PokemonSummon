@@ -185,12 +185,264 @@
         .hidden {
             display: none;
         }
+        
+        /* Raid additions */
+        .raid-section {
+            margin-top: 25px;
+            padding: 15px;
+            border: 2px dashed #7038F8;
+            border-radius: 12px;
+            background: #fafaff;
+        }
+        .raid-section h2 { margin: 0 0 10px; }
+        .raid-btn {
+            background:#7038F8;
+        }
+        .raid-btn:hover { background:#5729c2; }
+        
+        /* Boss selection styles */
+        .boss-selection-panel {
+            margin-top: 20px;
+            padding: 15px;
+            border: 2px solid #e74c3c;
+            border-radius: 10px;
+            background: #fff5f5;
+            display: none;
+        }
+        .boss-selection-panel.show {
+            display: block;
+        }
+        .boss-options {
+            display: flex;
+            gap: 15px;
+            margin: 15px 0;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .boss-card {
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            background: #ffffff;
+            text-align: center;
+            width: 180px;
+            transition: all 0.3s ease;
+        }
+        .boss-card:hover {
+            border-color: #3498db;
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+        }
+        .boss-card.selected {
+            border-color: #e74c3c;
+            background: #fff5f5;
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+        }
+        .boss-card img {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+        }
+        .boss-card h4 {
+            margin: 10px 0 5px;
+            color: #2c3e50;
+        }
+        .boss-card .boss-type {
+            font-size: 12px;
+            margin: 5px 0;
+        }
+        .boss-card .boss-rarity {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            color: white;
+            margin-top: 5px;
+        }
+        .boss-rarity.legendary {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+        }
+        .boss-rarity.mythical {
+            background: linear-gradient(45deg, #9932CC, #8A2BE2);
+        }
+        .payment-panel {
+            margin-top: 20px;
+            padding: 15px;
+            border: 2px solid #f39c12;
+            border-radius: 10px;
+            background: #fefbf3;
+        }
+        .coin-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 10px 0;
+            font-size: 18px;
+            font-weight: bold;
+            color: #f39c12;
+        }
+        .entry-fee {
+            text-align: center;
+            margin: 15px 0;
+            font-size: 16px;
+            color: #e74c3c;
+        }
+        .confirm-selection-panel {
+            margin-top: 20px;
+            padding: 15px;
+            border: 2px solid #27ae60;
+            border-radius: 10px;
+            background: #f8fff8;
+            display: none;
+        }
+        .confirm-selection-panel.show {
+            display: block;
+        }
+        .raid-lobby.hidden { display:none; }
+        .raid-lobby {
+            margin-top:15px;
+            padding:15px;
+            border:1px solid #ddd;
+            background:#ffffff;
+            border-radius:10px;
+            max-height:260px;
+            overflow:auto;
+            text-align:left;
+        }
+        .team-select-grid {
+            display:grid;
+            grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+            gap:10px;
+        }
+        .team-card {
+            border:1px solid #ccc;
+            border-radius:8px;
+            padding:8px;
+            cursor:pointer;
+            position:relative;
+            background:#f5f5f5;
+            transition:.2s;
+        }
+        .team-card.selected {
+            border-color:#7038F8;
+            box-shadow:0 0 0 2px #7038F8 inset;
+            background:#efe9ff;
+        }
+        .team-card img { width:72px; height:72px; display:block; margin:0 auto 5px; }
+        .team-limit-hint { font-size:12px; color:#666; margin:6px 0 0; }
+        .raid-meta { font-size:13px; color:#555; margin-top:6px; }
+        .team-switch-bar {
+            margin-top:10px;
+            display:flex;
+            gap:8px;
+            justify-content:center;
+            flex-wrap:wrap;
+        }
+        .team-switch-btn {
+            padding:6px 10px;
+            font-size:12px;
+            background:#3498db;
+        }
+        .team-switch-btn.active { background:#1b6fa3; }
+        .team-switch-btn:disabled { background:#7f8c8d; }
+        .raid-boss-banner {
+            animation:pulse 1.5s infinite;
+            background:linear-gradient(90deg,#ffd700,#ff69b4,#ffd700);
+            background-size:300% 100%;
+            -webkit-background-clip:text;
+            color:transparent;
+            font-weight:900;
+            text-transform:uppercase;
+            letter-spacing:2px;
+        }
+        @keyframes pulse {
+            0%{background-position:0% 50%}
+            50%{background-position:100% 50%}
+            100%{background-position:0% 50%}
+        }
+        .raid-capture-panel {
+            margin-top:20px;
+            padding:15px;
+            border:2px solid #ff8c00;
+            border-radius:10px;
+            background:#fff6e6;
+        }
+        .capture-balls {
+            display:flex;
+            gap:10px;
+            flex-wrap:wrap;
+            margin:10px 0;
+        }
+        .capture-balls button { background:#ff8c00; flex:1; min-width:120px; }
+        .capture-balls button:hover { background:#e97700; }
+        .cooldown-warning { color:#c0392b; font-size:13px; margin-top:5px; }
+        .badge-small {
+            display:inline-block;
+            padding:2px 6px;
+            background:#7038F8;
+            color:#fff;
+            font-size:11px;
+            border-radius:6px;
+            margin-left:6px;
+        }
     </style>
 </head>
 <body>
     <div class="battle-container">
         <h1>Pokémon Battle Simulator</h1>
-        
+        <div class="raid-section" id="raidSection">
+            <h2>Raid Battles <span class="badge-small">Beta</span></h2>
+            <p>Form a team (up to 3) and battle a Legendary/Mythical raid boss for a capture chance.</p>
+            <button class="raid-btn" id="openRaidLobbyBtn">Open Raid Lobby</button>
+            <div id="raidCooldownMsg" class="cooldown-warning hidden"></div>
+            <div class="raid-lobby hidden" id="raidLobby">
+                <strong>Select your team (max 3)</strong>
+                <div class="team-limit-hint">Click cards to toggle selection. Then continue to payment.</div>
+                <div id="teamSelectGrid" class="team-select-grid"></div>
+                <div class="raid-meta" id="raidTeamMeta"></div>
+                <button id="proceedToPaymentBtn" class="raid-btn" disabled>Continue to Payment</button>
+            </div>
+            
+            <!-- Payment Panel -->
+            <div class="payment-panel" id="paymentPanel" style="display: none;">
+                <h3>🪙 Raid Entry Fee</h3>
+                <div class="coin-display">
+                    <span>💰</span>
+                    <span id="userCoinsDisplay">Loading...</span>
+                    <span>Coins Available</span>
+                </div>
+                <div class="entry-fee">
+                    <strong>Entry Fee: 500 Coins</strong>
+                </div>
+                <p style="text-align: center; margin: 10px 0; color: #7f8c8d;">Pay the entry fee to access boss selection</p>
+                <button id="payEntryFeeBtn" class="raid-btn" style="background: #f39c12;">Pay Entry Fee</button>
+                <button id="cancelPaymentBtn" class="raid-btn" style="background: #95a5a6; margin-left: 10px;">Cancel</button>
+            </div>
+            
+            <!-- Boss Selection Panel -->
+            <div class="boss-selection-panel" id="bossSelectionPanel">
+                <h3>⚡ Choose Your Raid Boss</h3>
+                <p style="text-align: center; color: #7f8c8d;">Select one of these legendary/mythical Pokémon to battle:</p>
+                <div class="boss-options" id="bossOptions">
+                    <!-- Boss cards will be generated here -->
+                </div>
+                <button id="confirmBossBtn" class="raid-btn" style="background: #e74c3c;" disabled>Confirm Selection</button>
+                <button id="cancelBossBtn" class="raid-btn" style="background: #95a5a6; margin-left: 10px;">Back to Team</button>
+            </div>
+            
+            <!-- Confirmation Panel -->
+            <div class="confirm-selection-panel" id="confirmSelectionPanel">
+                <h3>🎯 Ready to Battle!</h3>
+                <div id="selectedBossInfo" style="text-align: center; margin: 15px 0;">
+                    <!-- Selected boss info will appear here -->
+                </div>
+                <p style="text-align: center; color: #7f8c8d;">Are you ready to start the raid battle?</p>
+                <button id="startRaidBattleBtn" class="raid-btn" style="background: #27ae60;">Start Battle!</button>
+                <button id="backToBossBtn" class="raid-btn" style="background: #95a5a6; margin-left: 10px;">Change Boss</button>
+            </div>
+        </div>
         <div id="startScreen">
             <p>Click the button below to start a random Pokémon battle!</p>
             <button class="start-btn" id="startBattle">Start Battle</button>
@@ -231,9 +483,16 @@
             <div class="move-buttons" id="moveButtons">
                 <!-- Move buttons will be added here by JavaScript -->
             </div>
+            <div id="teamSwitchBar" class="team-switch-bar hidden"></div> <!-- NEW: team switch bar (fixes null reference) -->
             
             <div class="battle-log" id="battleLog">
                 <!-- Battle messages will appear here -->
+            </div>
+            <div id="raidCapturePanel" class="raid-capture-panel hidden">
+                <h3>Raid Victory! Capture Opportunity</h3>
+                <p id="raidCaptureIntro"></p>
+                <div class="capture-balls" id="raidCaptureButtons"></div>
+                <div id="raidCaptureResult"></div>
             </div>
             
             <button class="restart-btn hidden" id="restartBattle">Battle Again</button>
@@ -271,14 +530,73 @@
         let opponentPokemon = null;
         let currentTurn = 'player';
         let battleEnded = false;
+        let playerProtected = false;
+        let opponentProtected = false;
         
         // Constants
         const MAX_POKEMON_ID = 151; // Limit to Gen 1 for simplicity
         const MAX_MOVES = 4;
         
+        // --- Raid system additions ---
+        const RAID_COOLDOWN_MINUTES = 10;
+        const RAID_ENTRY_FEE = 500; // coins
+        let isRaid = false;
+        let raidTeam = [];      // Array of battle-ready Pokémon objects (player side)
+        let activePlayerIndex = 0;
+        let raidBossOriginal = null;
+        let raidCooldownUntil = null;
+        let raidCapturePhase = false;
+        let userCoins = 0;
+        let selectedBossData = null;
+        let availableBosses = [];
+        
+        const raidSection = document.getElementById('raidSection');
+        const openRaidLobbyBtn = document.getElementById('openRaidLobbyBtn');
+        const raidLobby = document.getElementById('raidLobby');
+        const teamSelectGrid = document.getElementById('teamSelectGrid');
+        const proceedToPaymentBtn = document.getElementById('proceedToPaymentBtn');
+        const raidTeamMeta = document.getElementById('raidTeamMeta');
+        const teamSwitchBar = document.getElementById('teamSwitchBar');
+        const raidCooldownMsg = document.getElementById('raidCooldownMsg');
+        const raidCapturePanel = document.getElementById('raidCapturePanel');
+        const raidCaptureButtons = document.getElementById('raidCaptureButtons');
+        const raidCaptureIntro = document.getElementById('raidCaptureIntro');
+        const raidCaptureResult = document.getElementById('raidCaptureResult');
+        
+        // New elements for payment and boss selection
+        const paymentPanel = document.getElementById('paymentPanel');
+        const userCoinsDisplay = document.getElementById('userCoinsDisplay');
+        const payEntryFeeBtn = document.getElementById('payEntryFeeBtn');
+        const cancelPaymentBtn = document.getElementById('cancelPaymentBtn');
+        const bossSelectionPanel = document.getElementById('bossSelectionPanel');
+        const bossOptions = document.getElementById('bossOptions');
+        const confirmBossBtn = document.getElementById('confirmBossBtn');
+        const cancelBossBtn = document.getElementById('cancelBossBtn');
+        const confirmSelectionPanel = document.getElementById('confirmSelectionPanel');
+        const selectedBossInfo = document.getElementById('selectedBossInfo');
+        const startRaidBattleBtn = document.getElementById('startRaidBattleBtn');
+        const backToBossBtn = document.getElementById('backToBossBtn');
+        
+        // Legendary & Mythical pools (subset for brevity – extend as needed)
+        const LEGENDARIES = [144,145,146,150,243,244,245,249,250,382,383,384,483,484,485,486,488,716,717,718];
+        const MYTHICALS = [151,251,385,386,489,490,491,492,493,494,647,648,649];
+        
+        // Reduced raid capture multipliers (applied over simplified base)
+        const RAID_CAPTURE_MOD = 0.5; // 50% of normal catch odds
+        
         // Start battle when button is clicked
         startBattleBtn.addEventListener('click', startBattle);
         restartBattleBtn.addEventListener('click', restartBattle);
+        openRaidLobbyBtn.addEventListener('click', toggleRaidLobby);
+        
+        // New raid flow event listeners
+        proceedToPaymentBtn.addEventListener('click', proceedToPayment);
+        payEntryFeeBtn.addEventListener('click', payEntryFee);
+        cancelPaymentBtn.addEventListener('click', cancelPayment);
+        confirmBossBtn.addEventListener('click', confirmBossSelection);
+        cancelBossBtn.addEventListener('click', cancelBossSelection);
+        startRaidBattleBtn.addEventListener('click', startRaidBattle);
+        backToBossBtn.addEventListener('click', backToBossSelection);
         
         // Start a new battle
         async function startBattle() {
@@ -456,27 +774,38 @@
         // Use a move
         async function useMove(moveIndex) {
             if (battleEnded) return;
-            
-            // Disable all move buttons
+
             disableMoveButtons(true);
-            
-            // Player's turn
+
             if (currentTurn === 'player') {
                 const move = playerPokemon.moves[moveIndex];
                 addBattleMessage(`${capitalizeFirstLetter(playerPokemon.name)} used ${capitalizeFirstLetter(move.name)}!`, 'player-text');
-                
-                // Calculate damage and apply it
-                const damage = calculateDamage(playerPokemon, opponentPokemon, move);
-                await applyDamage(opponentPokemon, damage, opponentCurrentHP, opponentHPFill);
-                
-                // Check if opponent fainted
+
+                // Check for "protect" move
+                if (move.name.toLowerCase().includes('protect')) {
+                    playerProtected = true;
+                    addBattleMessage(`${capitalizeFirstLetter(playerPokemon.name)} is protected this turn!`);
+                }
+                // Check for stat-altering moves
+                else if (isStatMove(move.name)) {
+                    applyStatMove(playerPokemon, move, 'player');
+                }
+                // Damage-dealing moves
+                else if (move.power && move.power > 0) {
+                    const damage = calculateDamage(playerPokemon, opponentPokemon, move);
+                    await applyDamage(opponentPokemon, damage, opponentCurrentHP, opponentHPFill);
+                    playerProtected = false;
+                } else {
+                    addBattleMessage(`But nothing happened!`);
+                    playerProtected = false;
+                }
+
                 if (opponentPokemon.currentHP <= 0) {
                     addBattleMessage(`${capitalizeFirstLetter(opponentPokemon.name)} fainted!`);
                     endBattle(true);
                     return;
                 }
-                
-                // Switch to opponent's turn
+
                 currentTurn = 'opponent';
                 setTimeout(opponentTurn, 1500);
             }
@@ -486,57 +815,138 @@
         async function opponentTurn() {
             if (battleEnded) return;
             
-            // Choose a random move
             const moveIndex = Math.floor(Math.random() * opponentPokemon.moves.length);
             const move = opponentPokemon.moves[moveIndex];
-            
+
             addBattleMessage(`${capitalizeFirstLetter(opponentPokemon.name)} used ${capitalizeFirstLetter(move.name)}!`, 'opponent-text');
-            
-            // Calculate damage and apply it
-            const damage = calculateDamage(opponentPokemon, playerPokemon, move);
-            await applyDamage(playerPokemon, damage, playerCurrentHP, playerHPFill);
-            
-            // Check if player fainted
+
+            if (move.name.toLowerCase().includes('protect')) {
+                opponentProtected = true;
+                addBattleMessage(`${capitalizeFirstLetter(opponentPokemon.name)} is protected this turn!`);
+            }
+            else if (isStatMove(move.name)) {
+                applyStatMove(opponentPokemon, move, 'opponent');
+            }
+            else if (move.power && move.power > 0) {
+                if (playerProtected) {
+                    addBattleMessage(`${capitalizeFirstLetter(playerPokemon.name)} protected itself! No damage taken.`);
+                    playerProtected = false;
+                } else {
+                    const damage = calculateDamage(opponentPokemon, playerPokemon, move);
+                    await applyDamage(playerPokemon, damage, playerCurrentHP, playerHPFill);
+                }
+                opponentProtected = false;
+            } else {
+                addBattleMessage(`But nothing happened!`);
+                opponentProtected = false;
+            }
+
             if (playerPokemon.currentHP <= 0) {
                 addBattleMessage(`${capitalizeFirstLetter(playerPokemon.name)} fainted!`);
                 endBattle(false);
                 return;
             }
-            
-            // Switch back to player's turn
+
             currentTurn = 'player';
             disableMoveButtons(false);
             addBattleMessage(`What will ${capitalizeFirstLetter(playerPokemon.name)} do?`);
+        }
+        
+        // Detect stat-altering moves by name (add more as needed)
+        function isStatMove(moveName) {
+            const statMoves = [
+                'calm mind', 'swords dance', 'growl', 'leer', 'tail whip', 'harden', 'agility', 'iron defense',
+                'bulk up', 'double team', 'amnesia', 'minimize', 'defense curl', 'focus energy', 'howl', 'work up'
+            ];
+            return statMoves.some(statMove => moveName.toLowerCase().includes(statMove));
+        }
+        
+        // Apply stat changes for stat-altering moves
+        function applyStatMove(pokemon, move, side) {
+            const name = capitalizeFirstLetter(pokemon.name);
+            const moveName = move.name.toLowerCase();
+
+            if (moveName.includes('calm mind')) {
+                pokemon.specialAttack = Math.floor(pokemon.specialAttack * 1.5);
+                pokemon.specialDefense = Math.floor(pokemon.specialDefense * 1.5);
+                addBattleMessage(`${name}'s Special Attack and Special Defense rose!`, side === 'player' ? 'player-text' : 'opponent-text');
+            } else if (moveName.includes('swords dance')) {
+                pokemon.attack = Math.floor(pokemon.attack * 2);
+                addBattleMessage(`${name}'s Attack sharply rose!`, side === 'player' ? 'player-text' : 'opponent-text');
+            } else if (moveName.includes('growl')) {
+                if (side === 'player') {
+                    opponentPokemon.attack = Math.max(1, Math.floor(opponentPokemon.attack * 0.67));
+                    addBattleMessage(`${capitalizeFirstLetter(opponentPokemon.name)}'s Attack fell!`, 'opponent-text');
+                } else {
+                    playerPokemon.attack = Math.max(1, Math.floor(playerPokemon.attack * 0.67));
+                    addBattleMessage(`${capitalizeFirstLetter(playerPokemon.name)}'s Attack fell!`, 'player-text');
+                }
+            } else if (moveName.includes('leer') || moveName.includes('tail whip')) {
+                if (side === 'player') {
+                    opponentPokemon.defense = Math.max(1, Math.floor(opponentPokemon.defense * 0.67));
+                    addBattleMessage(`${capitalizeFirstLetter(opponentPokemon.name)}'s Defense fell!`, 'opponent-text');
+                } else {
+                    playerPokemon.defense = Math.max(1, Math.floor(playerPokemon.defense * 0.67));
+                    addBattleMessage(`${capitalizeFirstLetter(playerPokemon.name)}'s Defense fell!`, 'player-text');
+                }
+            } else if (moveName.includes('harden') || moveName.includes('iron defense') || moveName.includes('defense curl')) {
+                pokemon.defense = Math.floor(pokemon.defense * 1.5);
+                addBattleMessage(`${name}'s Defense rose!`, side === 'player' ? 'player-text' : 'opponent-text');
+            } else if (moveName.includes('agility') || moveName.includes('double team')) {
+                pokemon.speed = Math.floor(pokemon.speed * 1.5);
+                addBattleMessage(`${name}'s Speed rose!`, side === 'player' ? 'player-text' : 'opponent-text');
+            } else if (moveName.includes('amnesia')) {
+                pokemon.specialDefense = Math.floor(pokemon.specialDefense * 2);
+                addBattleMessage(`${name}'s Special Defense sharply rose!`, side === 'player' ? 'player-text' : 'opponent-text');
+            } else if (moveName.includes('focus energy') || moveName.includes('howl') || moveName.includes('work up')) {
+                pokemon.attack = Math.floor(pokemon.attack * 1.5);
+                addBattleMessage(`${name}'s Attack rose!`, side === 'player' ? 'player-text' : 'opponent-text');
+            } else if (moveName.includes('minimize')) {
+                pokemon.speed = Math.floor(pokemon.speed * 2);
+                addBattleMessage(`${name}'s evasiveness rose!`, side === 'player' ? 'player-text' : 'opponent-text');
+            } else {
+                addBattleMessage(`But nothing happened!`, side === 'player' ? 'player-text' : 'opponent-text');
+            }
         }
         
         // Calculate damage
         function calculateDamage(attacker, defender, move) {
             // Skip calculation if move has no power
             if (!move.power) return 0;
-            
-            // Base damage formula (simplified from the games)
+
+            // Use fixed level for both Pokémon
+            const level = 50;
+
+            // Choose attack/defense stats based on move class
             let attack = move.damageClass === 'special' ? attacker.specialAttack : attacker.attack;
             let defense = move.damageClass === 'special' ? defender.specialDefense : defender.defense;
-            
-            // Basic damage formula
-            let damage = Math.floor(((2 * 50 / 5 + 2) * move.power * attack / defense) / 50 + 2);
-            
-            // Type effectiveness (simplified)
+
+            // STAB (Same Type Attack Bonus)
+            let stab = attacker.types.includes(move.type) ? 1.5 : 1.0;
+
+            // Type effectiveness
             const effectiveness = getTypeEffectiveness(move.type, defender.types);
-            damage = Math.floor(damage * effectiveness);
-            
-            // Critical hit (10% chance)
-            if (Math.random() < 0.1) {
-                damage = Math.floor(damage * 1.5);
-                addBattleMessage('A critical hit!');
-            }
-            
+
+            // Random factor between 0.85 and 1.00
+            const random = (Math.random() * 0.15) + 0.85;
+
             // Accuracy check
             if (move.accuracy && Math.random() * 100 > move.accuracy) {
                 addBattleMessage('But it missed!');
                 return 0;
             }
-            
+
+            // Damage formula (classic Pokémon)
+            let baseDamage = (((2 * level / 5 + 2) * move.power * attack / defense) / 50) + 2;
+            let modifier = stab * effectiveness * random;
+            let damage = Math.floor(baseDamage * modifier);
+
+            // Critical hit (10% chance)
+            if (Math.random() < 0.1) {
+                damage = Math.floor(damage * 1.5);
+                addBattleMessage('A critical hit!');
+            }
+
             // Type effectiveness messages
             if (effectiveness > 1) {
                 addBattleMessage('It\'s super effective!');
@@ -546,8 +956,8 @@
                 addBattleMessage('It has no effect...');
                 return 0;
             }
-            
-            // Ensure minimum damage is 1 if move hit
+
+            // Ensure minimum damage is 1 if move hit and effectiveness > 0
             return Math.max(1, damage);
         }
         
@@ -648,6 +1058,589 @@
             
             return effectiveness;
         }
+        
+        /* Raid functions */
+        function toggleRaidLobby(){
+            if(!checkRaidCooldownUI()) return;
+            raidLobby.classList.toggle('hidden');
+            if(!raidLobby.classList.contains('hidden')) {
+                loadOwnedPokemonForRaid();
+            }
+        }
+        
+        async function loadSavedRaidTeamIds(){
+            try{
+                const r = await fetch('/api/raid-team');
+                if(!r.ok) return [];
+                const d = await r.json();
+                return Array.isArray(d.team) ? d.team : [];
+            }catch{ return []; }
+        }
+        async function saveRaidTeamIds(ids){
+            try{
+                await fetch('/api/raid-team',{
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify({ team:ids })
+                });
+            }catch{}
+        }
+        
+        async function loadOwnedPokemonForRaid() {
+            teamSelectGrid.innerHTML = 'Loading...';
+            try {
+                const savedIds = await loadSavedRaidTeamIds(); // NEW
+                const res = await fetch('/api/get-pokemon');
+                const data = await res.json();
+                teamSelectGrid.innerHTML = '';
+                const selectedIds = new Set(savedIds.slice(0,3)); // pre-select (max 3)
+                data.forEach(p => {
+                    const card = document.createElement('div');
+                    card.className = 'team-card';
+                    const id = p.pokemonId || p.id;
+                    const name = p.pokemonName || p.name;
+                    const img = p.pokemonImage || p.image || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+                    card.innerHTML = `<img src="${img}" alt="${name}"><div style="font-size:12px;text-align:center">${capitalizeFirstLetter(name)}<br>#${String(id).padStart(3,'0')}</div>`;
+                    if (selectedIds.has(id)) card.classList.add('selected'); // NEW
+                    card.addEventListener('click', () => {
+                        if (card.classList.contains('selected')) {
+                            card.classList.remove('selected');
+                            selectedIds.delete(id);
+                        } else {
+                            if (selectedIds.size >= 3) return;
+                            card.classList.add('selected');
+                            selectedIds.add(id);
+                        }
+                        updateRaidTeamMeta(selectedIds);
+                    });
+                    teamSelectGrid.appendChild(card);
+                });
+                updateRaidTeamMeta(selectedIds); // NEW ensure button state
+            } catch (e) {
+                teamSelectGrid.innerHTML = 'Failed to load Pokémon.';
+            }
+        }
+        
+        function updateRaidTeamMeta(selectedIds){
+            raidTeamMeta.textContent = `Selected: ${[...selectedIds].join(', ') || 'None'}`;
+            startRaidBtn.disabled = selectedIds.size === 0;
+        }
+        
+        function checkRaidCooldownUI() {
+            const now = Date.now();
+            const stored = localStorage.getItem('raidCooldownUntil');
+            if (stored) {
+                const ts = parseInt(stored,10);
+                if (ts > now) {
+                    const mins = Math.ceil((ts - now)/60000);
+                    raidCooldownMsg.textContent = `Raid on cooldown. Try again in ~${mins} min.`;
+                    raidCooldownMsg.classList.remove('hidden');
+                    return false;
+                }
+            }
+            raidCooldownMsg.classList.add('hidden');
+            return true;
+        }
+        
+        function setRaidCooldown() {
+            const until = Date.now() + RAID_COOLDOWN_MINUTES * 60000;
+            localStorage.setItem('raidCooldownUntil', until);
+        }
+        
+        async function startRaid(){
+            if (!checkRaidCooldownUI()) return;
+            const selected = [...teamSelectGrid.querySelectorAll('.team-card.selected')];
+            if (!selected.length) return;
+            const pickedIds = [];
+            raidTeam = [];
+            for (const card of selected) {
+                const idText = card.querySelector('div').textContent.match(/#(\d+)/);
+                if (!idText) continue;
+                const id = parseInt(idText[1],10);
+                pickedIds.push(id);                 // NEW
+                const raw = await fetchPokemonData(id);
+                raidTeam.push(createBattlePokemon(raw));
+            }
+            await saveRaidTeamIds(pickedIds);       // NEW persist team
+            // Determine raid boss (legendary or mythical)
+            const pool = Math.random() < 0.5 ? LEGENDARIES : MYTHICALS;
+            const bossId = pool[Math.floor(Math.random()*pool.length)];
+            isRaid = true;
+            raidCapturePhase = false;
+            await prepareRaidBoss(bossId);
+            raidLobby.classList.add('hidden');
+            startBattleCore(true); // start using raid data
+        }
+        
+        async function prepareRaidBoss(id){
+            const data = await fetchPokemonData(id);
+            opponentPokemon = createBattlePokemon(data);
+            raidBossOriginal = opponentPokemon.name;
+            // Boost boss stats for challenge
+            opponentPokemon.maxHP = Math.floor(opponentPokemon.maxHP * 1.3);
+            opponentPokemon.currentHP = opponentPokemon.maxHP;
+            opponentPokemon.defense = Math.floor(opponentPokemon.defense * 1.15);
+            opponentPokemon.specialDefense = Math.floor(opponentPokemon.specialDefense * 1.15);
+        }
+        
+        function startBattleCore(raidMode=false){
+            // For raid: playerPokemon = active member of raidTeam
+            if (raidMode && raidTeam.length){
+                activePlayerIndex = 0;
+                playerPokemon = raidTeam[activePlayerIndex];
+            }
+            // Reuse existing update flow
+            startScreen.classList.add('hidden');
+            battleScreen.classList.remove('hidden');
+            loader.classList.add('hidden');
+            buildTeamSwitchBar();
+            updatePokemonUI().then(()=>{
+                if (isRaid){
+                    addBattleMessage(`A Raid Boss ${capitalizeFirstLetter(opponentPokemon.name)} appeared!`, 'opponent-text');
+                    addBattleMessage(`Send out ${capitalizeFirstLetter(playerPokemon.name)}!`, 'player-text');
+                }
+            });
+        }
+        
+        function buildTeamSwitchBar(){
+            if (!isRaid) return;
+            if (!teamSwitchBar) return; // NEW null guard
+            teamSwitchBar.innerHTML = '';
+            teamSwitchBar.classList.remove('hidden');
+            raidTeam.forEach((p, idx)=>{
+                const btn = document.createElement('button');
+                btn.className='team-switch-btn';
+                btn.textContent = capitalizeFirstLetter(p.name);
+                btn.disabled = (idx === activePlayerIndex) || p.currentHP<=0;
+                if (idx === activePlayerIndex) btn.classList.add('active');
+                btn.addEventListener('click', ()=> switchActivePokemon(idx));
+                teamSwitchBar.appendChild(btn);
+            });
+        }
+        
+        async function ensureMovesLoaded(pokemon){ // NEW
+            if (!pokemon) return;
+            if (Array.isArray(pokemon.moves) && pokemon.moves.length && typeof pokemon.moves[0].then === 'function'){
+                pokemon.moves = await Promise.all(pokemon.moves);
+            }
+        }
+        
+        function switchActivePokemon(newIndex){
+            if (battleEnded || raidCapturePhase) return;
+            if (newIndex === activePlayerIndex) return;
+            if (raidTeam[newIndex].currentHP<=0) return;
+            activePlayerIndex = newIndex;
+            playerPokemon = raidTeam[activePlayerIndex];
+            ensureMovesLoaded(playerPokemon).then(()=>{
+                createMoveButtons(); // NEW regenerate buttons for new mon
+                addBattleMessage(`You switched to ${capitalizeFirstLetter(playerPokemon.name)}!`, 'player-text');
+                updatePokemonUI();
+                disableMoveButtons(false);
+                buildTeamSwitchBar();
+            });
+        }
+        
+        // Override faint handling in existing flow: hook into applyDamage aftermath via checks where faint is processed
+        const originalEndBattle = endBattle;
+        endBattle = function(playerWon){
+            if (isRaid && playerWon){
+                // Instead of immediate end -> capture phase
+                raidCapturePhase = true;
+                disableMoveButtons(true);
+                addBattleMessage('Raid Boss defeated! Capture opportunity begins.', 'player-text');
+                showRaidCaptureUI();
+                setRaidCooldown();
+                return;
+            }
+            originalEndBattle(playerWon);
+            if (isRaid && !playerWon) setRaidCooldown();
+        };
+        
+        // Inject check after opponent damages player (loss condition across team)
+        const originalOpponentTurn = opponentTurn;
+        opponentTurn = async function(){
+            await originalOpponentTurn();
+            if (isRaid && !battleEnded && playerPokemon?.currentHP===0){
+                // Try auto-switch
+                const nextIdx = raidTeam.findIndex(p=>p.currentHP>0);
+                if (nextIdx===-1){
+                    addBattleMessage('All your team fainted!', 'opponent-text');
+                    originalEndBattle(false);
+                    setRaidCooldown();
+                } else {
+                    activePlayerIndex = nextIdx;
+                    playerPokemon = raidTeam[activePlayerIndex];
+                    await ensureMovesLoaded(playerPokemon); // NEW
+                    createMoveButtons();                    // NEW
+                    buildTeamSwitchBar();
+                    addBattleMessage(`Go, ${capitalizeFirstLetter(playerPokemon.name)}!`, 'player-text');
+                    updatePokemonUI();
+                }
+            }
+            buildTeamSwitchBar();
+        };
+        
+        // Replace startBattle entry for random (kept) to call startBattleCore(false). We minimally wrap original startBattle.
+        const originalStartBattle = startBattle;
+        startBattle = async function(){
+            isRaid = false;
+            raidTeam = [];
+            await originalStartBattle();
+        };
+        
+        // --- Raid Capture Phase ---
+        async function showRaidCaptureUI(){
+            raidCapturePanel.classList.remove('hidden');
+            raidCaptureIntro.textContent = `You have a limited chance to capture ${capitalizeFirstLetter(raidBossOriginal)}. Choose a Poké Ball:`;
+            raidCaptureButtons.innerHTML='Loading balls...';
+            try {
+                const res = await fetch('/api/pokeballs');
+                const data = await res.json();
+                const inventory = {};
+                (data.pokeballs||[]).forEach(b=>inventory[b.type]=b.count);
+                const ballTypes = ['pokeball','greatball','ultraball','masterball'];
+                raidCaptureButtons.innerHTML='';
+                ballTypes.forEach(bt=>{
+                    const count = inventory[bt]||0;
+                    const btn = document.createElement('button');
+                    btn.textContent = `${formatBall(bt)} (${count})`;
+                    btn.disabled = count<=0;
+                    btn.addEventListener('click', ()=>attemptRaidCapture(bt,count));
+                    raidCaptureButtons.appendChild(btn);
+                });
+            } catch (e){
+                raidCaptureButtons.innerHTML='Failed to load inventory.';
+            }
+        }
+        
+        function formatBall(bt){
+            switch(bt){
+                case 'pokeball': return 'Poké Ball';
+                case 'greatball': return 'Great Ball';
+                case 'ultraball': return 'Ultra Ball';
+                case 'masterball': return 'Master Ball';
+                default: return bt;
+            }
+        }
+        
+        async function attemptRaidCapture(ballType,currentCount){
+            // Decrement immediately (optimistic)
+            await fetch('/api/pokeballs-update', {
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({type:ballType,count:currentCount-1})
+            }).catch(()=>{});
+            
+            const base = { pokeball:0.08, greatball:0.15, ultraball:0.25, masterball:1.0 }[ballType] || 0.05;
+            const chance = Math.min(1, base * RAID_CAPTURE_MOD);
+            const roll = Math.random();
+            const success = roll < chance || ballType==='masterball';
+            raidCaptureResult.textContent = `Roll ${(roll*100).toFixed(1)}% vs ${(chance*100).toFixed(1)}% => ${success? 'Captured!':'Broke free!'}`;
+            if (success){
+                await saveRaidCapture(opponentPokemon);
+                await postRaidResult(true,true);
+                addBattleMessage(`You captured ${capitalizeFirstLetter(opponentPokemon.name)}!`, 'player-text');
+                finalizeRaid();
+            } else {
+                await postRaidResult(true,false);
+                finalizeRaid();
+            }
+        }
+        
+        function finalizeRaid(){
+            raidCaptureButtons.querySelectorAll('button').forEach(b=>b.disabled=true);
+            restartBattleBtn.classList.remove('hidden');
+            battleEnded = true;
+        }
+        
+        async function saveRaidCapture(poke){
+            try {
+                await fetch('/api/save-pokemon', {
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify({
+                        pokemonName: poke.name,
+                        pokemonImage: poke.sprite,
+                        pokemonId: poke.id,
+                        pokemonTypes: poke.types,
+                        rarity: MYTHICALS.includes(poke.id)?'mythical':'legendary'
+                    })
+                });
+            } catch(e){}
+        }
+        
+        async function postRaidResult(defeated,captured){
+            try {
+                await fetch('/api/raid-result', {
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify({
+                        bossId: opponentPokemon.id,
+                        defeated,
+                        captured,
+                        timestamp: Date.now()
+                    })
+                });
+            } catch(e){}
+        }
+        
+        // === NEW RAID FLOW FUNCTIONS ===
+        
+        // Update the team meta button text to use new flow
+        function updateRaidTeamMeta(selectedIds){
+            raidTeamMeta.textContent = `Selected: ${[...selectedIds].join(', ') || 'None'}`;
+            proceedToPaymentBtn.disabled = selectedIds.size === 0;
+        }
+        
+        // Step 1: Proceed to payment
+        async function proceedToPayment() {
+            // Hide team selection, show payment panel
+            raidLobby.style.display = 'none';
+            paymentPanel.style.display = 'block';
+            
+            // Load user coins
+            await loadUserCoins();
+        }
+        
+        // Load user's coin balance
+        async function loadUserCoins() {
+            try {
+                const response = await fetch('/api/coins');
+                const data = await response.json();
+                userCoins = data.coins || 0;
+                userCoinsDisplay.textContent = userCoins;
+                
+                // Enable/disable payment button based on coin balance
+                if (userCoins >= RAID_ENTRY_FEE) {
+                    payEntryFeeBtn.disabled = false;
+                    payEntryFeeBtn.style.opacity = '1';
+                } else {
+                    payEntryFeeBtn.disabled = true;
+                    payEntryFeeBtn.style.opacity = '0.5';
+                }
+            } catch (error) {
+                console.error('Error loading coins:', error);
+                userCoinsDisplay.textContent = 'Error loading coins';
+                payEntryFeeBtn.disabled = true;
+            }
+        }
+        
+        // Step 2: Pay entry fee
+        async function payEntryFee() {
+            if (userCoins < RAID_ENTRY_FEE) {
+                alert(`Not enough coins! You need ${RAID_ENTRY_FEE} coins but only have ${userCoins}.`);
+                return;
+            }
+            
+            try {
+                // Deduct coins from user account
+                const newBalance = userCoins - RAID_ENTRY_FEE;
+                const response = await fetch('/api/update-coins', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({coins: newBalance})
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    userCoins = newBalance;
+                    // Hide payment panel, show boss selection
+                    paymentPanel.style.display = 'none';
+                    bossSelectionPanel.style.display = 'block';
+                    
+                    // Generate boss options
+                    await generateBossOptions();
+                } else {
+                    alert('Failed to process payment: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error processing payment:', error);
+                alert('Error processing payment. Please try again.');
+            }
+        }
+        
+        // Step 3: Generate 3 random boss options
+        async function generateBossOptions() {
+            bossOptions.innerHTML = '<p>Generating boss options...</p>';
+            
+            try {
+                availableBosses = [];
+                const allBosses = [...LEGENDARIES, ...MYTHICALS];
+                const selectedBossIds = getRandomItems(allBosses, 3);
+                
+                // Fetch boss data
+                for (const bossId of selectedBossIds) {
+                    const bossData = await fetchPokemonData(bossId);
+                    const rarity = MYTHICALS.includes(bossId) ? 'mythical' : 'legendary';
+                    availableBosses.push({ ...bossData, rarity });
+                }
+                
+                // Create boss cards
+                bossOptions.innerHTML = '';
+                availableBosses.forEach((boss, index) => {
+                    const bossCard = document.createElement('div');
+                    bossCard.className = 'boss-card';
+                    bossCard.dataset.index = index;
+                    
+                    const typesHtml = boss.types.map(typeData => 
+                        `<span class="type-badge ${typeData.type.name}">${typeData.type.name}</span>`
+                    ).join(' ');
+                    
+                    bossCard.innerHTML = `
+                        <img src="${boss.sprites.front_default}" alt="${boss.name}">
+                        <h4>${capitalizeFirstLetter(boss.name)}</h4>
+                        <div class="boss-type">${typesHtml}</div>
+                        <div class="boss-rarity ${boss.rarity}">${boss.rarity.toUpperCase()}</div>
+                    `;
+                    
+                    bossCard.addEventListener('click', () => selectBoss(index));
+                    bossOptions.appendChild(bossCard);
+                });
+            } catch (error) {
+                console.error('Error generating boss options:', error);
+                bossOptions.innerHTML = '<p>Error generating bosses. Please try again.</p>';
+            }
+        }
+        
+        // Step 4: Select a boss
+        function selectBoss(index) {
+            // Remove previous selections
+            bossOptions.querySelectorAll('.boss-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Select new boss
+            const selectedCard = bossOptions.querySelector(`[data-index="${index}"]`);
+            selectedCard.classList.add('selected');
+            
+            selectedBossData = availableBosses[index];
+            confirmBossBtn.disabled = false;
+        }
+        
+        // Step 5: Confirm boss selection
+        function confirmBossSelection() {
+            if (!selectedBossData) return;
+            
+            // Hide boss selection, show confirmation
+            bossSelectionPanel.style.display = 'none';
+            confirmSelectionPanel.style.display = 'block';
+            
+            // Show selected boss info
+            const typesHtml = selectedBossData.types.map(typeData => 
+                `<span class="type-badge ${typeData.type.name}">${typeData.type.name}</span>`
+            ).join(' ');
+            
+            selectedBossInfo.innerHTML = `
+                <div style="margin-bottom: 15px;">
+                    <img src="${selectedBossData.sprites.front_default}" alt="${selectedBossData.name}" style="width: 120px; height: 120px;">
+                </div>
+                <h3>${capitalizeFirstLetter(selectedBossData.name)}</h3>
+                <div style="margin: 10px 0;">${typesHtml}</div>
+                <div class="boss-rarity ${selectedBossData.rarity}" style="font-size: 14px; margin-top: 10px;">${selectedBossData.rarity.toUpperCase()}</div>
+            `;
+        }
+        
+        // Step 6: Start raid battle
+        async function startRaidBattle() {
+            if (!selectedBossData) return;
+            
+            try {
+                // Prepare the selected boss
+                opponentPokemon = createBattlePokemon(selectedBossData);
+                raidBossOriginal = opponentPokemon.name;
+                
+                // Boost boss stats for challenge
+                opponentPokemon.maxHP = Math.floor(opponentPokemon.maxHP * 1.3);
+                opponentPokemon.currentHP = opponentPokemon.maxHP;
+                opponentPokemon.defense = Math.floor(opponentPokemon.defense * 1.15);
+                opponentPokemon.specialDefense = Math.floor(opponentPokemon.specialDefense * 1.15);
+                
+                // Get selected team
+                const selected = [...teamSelectGrid.querySelectorAll('.team-card.selected')];
+                const pickedIds = [];
+                raidTeam = [];
+                
+                for (const card of selected) {
+                    const idText = card.querySelector('div').textContent.match(/#(\d+)/);
+                    if (!idText) continue;
+                    const id = parseInt(idText[1],10);
+                    pickedIds.push(id);
+                    const raw = await fetchPokemonData(id);
+                    raidTeam.push(createBattlePokemon(raw));
+                }
+                
+                await saveRaidTeamIds(pickedIds);
+                
+                // Set raid flags and start battle
+                isRaid = true;
+                raidCapturePhase = false;
+                
+                // Hide all raid panels
+                hideAllRaidPanels();
+                
+                // Start the battle
+                startBattleCore(true);
+                
+            } catch (error) {
+                console.error('Error starting raid battle:', error);
+                alert('Error starting raid battle. Please try again.');
+            }
+        }
+        
+        // Navigation functions
+        function cancelPayment() {
+            paymentPanel.style.display = 'none';
+            raidLobby.style.display = 'block';
+        }
+        
+        function cancelBossSelection() {
+            // Refund the entry fee
+            refundEntryFee();
+            bossSelectionPanel.style.display = 'none';
+            raidLobby.style.display = 'block';
+        }
+        
+        function backToBossSelection() {
+            confirmSelectionPanel.style.display = 'none';
+            bossSelectionPanel.style.display = 'block';
+            // Clear selection
+            selectedBossData = null;
+            confirmBossBtn.disabled = true;
+            bossOptions.querySelectorAll('.boss-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+        }
+        
+        // Utility function to hide all raid panels
+        function hideAllRaidPanels() {
+            paymentPanel.style.display = 'none';
+            bossSelectionPanel.style.display = 'none';
+            confirmSelectionPanel.style.display = 'none';
+            raidLobby.classList.add('hidden');
+        }
+        
+        // Refund entry fee (in case of cancellation)
+        async function refundEntryFee() {
+            try {
+                const newBalance = userCoins + RAID_ENTRY_FEE;
+                const response = await fetch('/api/update-coins', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({coins: newBalance})
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    userCoins = newBalance;
+                    console.log('Entry fee refunded');
+                }
+            } catch (error) {
+                console.error('Error refunding entry fee:', error);
+            }
+        }
+        
+        // Utility reuse of capitalizeFirstLetter already exists in file
+        // End of raid additions
     </script>
 </body>
 </html>

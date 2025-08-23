@@ -1,17 +1,160 @@
 // Global variables for pokeballs and currently summoned pokemon
 let selectedPokeball = null;
 let currentPokemon = null;
+let buddye = null;
+let buddy = null;
 let pokeballInventory = {
-    pokeball: 10,
-    greatball: 5,
-    ultraball: 3,
-    masterball: 1
+    pokeball: 0,
+    greatball: 0,
+    ultraball: 0,
+    masterball: 0
 };
+
+// Add these event listeners after your document is loaded
+document.getElementById('offerTradeBtn').addEventListener('click', () => {
+    promptTradeOffer();
+});
+
+document.getElementById('refreshTradesBtn').addEventListener('click', () => {
+    loadTradablePokemon();
+});
+
+// Function to prompt the user for trade information
+function promptTradeOffer() {
+    // Get the user's Pokémon for selection
+    fetch('/api/get-pokemon')
+        .then(response => response.json())
+        .then(data => {
+            const userPokemon = data.pokemon;
+            
+            if (!userPokemon || userPokemon.length === 0) {
+                showNotification('You need to have Pokémon to trade!', 'error');
+                return;
+            }
+            
+            // Get Pokémon to offer
+            const ownedPokemonIds = userPokemon.map(p => p.id).join(', ');
+            const offeredPokemonId = prompt(`Enter the ID of the Pokémon you want to offer:\nYour Pokémon IDs: ${ownedPokemonIds}`);
+            
+            if (!offeredPokemonId) return;
+            
+            // Verify the offered Pokémon belongs to the user
+            const offeredPokemon = userPokemon.find(p => p.id == offeredPokemonId);
+            if (!offeredPokemon) {
+                showNotification("You don't own this Pokémon!", 'error');
+                return;
+            }
+            
+            // Get username to trade with
+            const toUsername = prompt("Enter the username you want to trade with:");
+            if (!toUsername) return;
+            
+            // Get Pokémon to request (optional)
+            const requestedPokemonId = prompt("Enter the ID of the Pokémon you want in return (leave blank for any):");
+            
+            // Create the trade offer
+            createTradeOffer(toUsername, offeredPokemonId, requestedPokemonId);
+        })
+        .catch(error => {
+            console.error('Error fetching your Pokémon:', error);
+            showNotification('Failed to load your Pokémon', 'error');
+        });
+}
+
+// Function to create a trade offer
+async function createTradeOffer(toUsername, offeredPokemonId, requestedPokemonId) {
+    try {
+        showNotification('Creating trade offer...', 'info');
+        
+        // First, get the userId from username
+        const userResponse = await fetch(`/api/user-by-username/${toUsername}`);
+        if (!userResponse.ok) {
+            showNotification(`User "${toUsername}" not found`, 'error');
+            return;
+        }
+        
+        const userData = await userResponse.json();
+        const toUserId = userData.userId;
+        
+        // Create the trade offer
+        const response = await fetch('/api/trade-offer', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                toUserId,
+                offeredPokemonId,
+                requestedPokemonId: requestedPokemonId || null
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showNotification('Trade offer created successfully!', 'success');
+            // Reload trades to show the new one
+            loadTradablePokemon();
+        } else {
+            showNotification(`Failed to create trade: ${result.message}`, 'error');
+        }
+    } catch (error) {
+        console.error('Error creating trade offer:', error);
+        showNotification('Error creating trade offer', 'error');
+    }
+}
+
+async function loadPokeballsFromDB() {
+    try {
+        const res = await fetch('/api/pokeballs');
+        const data = await res.json();
+
+        if (data.success) {
+            data.pokeballs.forEach(ball => {
+                pokeballInventory[ball.type] = ball.count;
+            });
+            updateBallCounts(); // ⬅️ update UI
+            console.log("Loaded inventory:", pokeballInventory);
+        } else {
+            console.error("Failed to load pokeballs:", data.message);
+        }
+    } catch (err) {
+        console.error("Error loading pokeballs from DB:", err);
+    }
+}
+
+// Call this once when page loads
+window.addEventListener('DOMContentLoaded', loadPokeballsFromDB);
+
 
 // Global variable for user coins
 // let userCoins = 500; // Starting amount
 
 // let loadCoins = loadCoins();
+async function updatePokeballCount(ballType, newCount) {
+    try {
+        const response = await fetch('/api/pokeballs-update', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                type: ballType,
+                count: newCount
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to update ${ballType} count: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log(`${ballType} count updated successfully:`, data);
+    } catch (error) {
+        console.error(`Error updating ${ballType} count:`, error);
+    }
+}
+
 
 async function loadCoins() {
     try {
@@ -51,24 +194,26 @@ async function updateCoinsInDB(newCoins) {
 }
 
 function buyPokeball(ballType, price) {
-    
     if (userCoins >= price) {
         // Deduct coins
         userCoins -= price;
         updateCoinsDisplay();
-        updateCoinsInDB(userCoins); // Save the updated coins value in MongoDB
+        updateCoinsInDB(userCoins); // Save coins in DB
 
         // Add to inventory
         pokeballInventory[ballType]++;
         updateBallCounts();
 
-        // Show success message
+        // Update in DB
+        updatePokeballCount(ballType, pokeballInventory[ballType]);
+
+        // Success message
         showNotification(`Successfully purchased 1 ${formatBallName(ballType)}!`, 'success');
     } else {
-        // Show insufficient funds message
         showNotification(`Not enough coins! You need ${price - userCoins} more coins.`, 'error');
     }
 }
+
 
 
 
@@ -237,12 +382,14 @@ const tradePokemon = async (pokemonCard) => {
         idText = idelm.textContent; // ← this is "#080"
         idText = idText.replace("#" , "");
         console.log('Pokemon ID:', idText );
-
-        console.log(`/api/trade-pokemon/${idText}`);
-
     }
-    const response = await fetch(`/api/trade-pokemon/${idText}`, {
-        method: 'DELETE'
+    const toUserId = prompt("Enter the user ID you want to trade with:");
+    const requestionPokemon = prompt("Enter the Pokemon you want to trade for (by ID):");
+    
+    const response = await fetch(`/api/trade-offer`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ offeredPokemonId: idText ,  toUserId: toUserId , requestedPokemonId: requestionPokemon })
     });
 
     const result = await response.json();
@@ -258,7 +405,480 @@ const tradePokemon = async (pokemonCard) => {
     }
 }
 
+async function loadTradablePokemon() {
+    try {
+        const response = await fetch('/api/trade-offers');
+        if (!response.ok) throw new Error('Failed to fetch trade offers');
+        
+        const data = await response.json();
+        const tradeOffers = data.tradeOffers || [];
+        
+        // Get container
+        const container = document.getElementById('tradeOffersContainer');
+        if (!container) {
+            console.error('Trade offers container not found');
+            return;
+        }
+        
+        container.innerHTML = '';
+        
+        if (tradeOffers.length === 0) {
+            container.innerHTML = '<p class="no-trades">No trade offers available</p>';
+            return;
+        }
+
+        // Get current user ID for comparison
+        const currentUser = await getCurrentUser();
+        const currentUserId = currentUser?.userId;
+        
+        // Create each trade offer card
+        for (const offer of tradeOffers) {
+            const offerCard = document.createElement('div');
+            offerCard.className = 'trade-offer-card';
+            
+            // Create trade details section
+            const tradeDetails = document.createElement('div');
+            tradeDetails.className = 'trade-details';
+            
+            // Fetch user info for display
+            let fromUsername = "User " + offer.fromUserId;
+            try {
+                const userResponse = await fetch(`/api/user/${offer.fromUserId}`);
+                if (userResponse.ok) {
+                    const userData = await userResponse.json();
+                    fromUsername = userData.username;
+                }
+            } catch (error) {
+                console.error("Failed to fetch username:", error);
+            }
+            
+            tradeDetails.innerHTML = `
+                <h3>Trade Offer</h3>
+                <p>From: ${fromUsername}</p>
+                <p>Status: <span class="status ${offer.status}">${offer.status}</span></p>
+            `;
+            
+            // Create trade content with Pokémon
+            const tradeContent = document.createElement('div');
+            tradeContent.className = 'trade-content';
+            
+            // Add offered Pokémon
+            try {
+                const offeredPokemon = document.createElement('div');
+                offeredPokemon.className = 'trade-pokemon offered';
+                
+                // Fetch Pokémon details
+                const pokemonResponse = await fetch(`/api/pokemon/${offer.offeredPokemonId}`);
+                if (!pokemonResponse.ok) throw new Error('Failed to fetch Pokémon');
+                
+                const pokemonData = await pokemonResponse.json();
+                offeredPokemon.innerHTML = `
+                    <div class="label">Offered</div>
+                    <img src="${pokemonData.image}" alt="${pokemonData.name}">
+                    <p>${capitalizeFirstLetter(pokemonData.name)}</p>
+                `;
+                
+                tradeContent.appendChild(offeredPokemon);
+                
+                // Add exchange icon
+                const exchangeIcon = document.createElement('div');
+                exchangeIcon.className = 'exchange-icon';
+                exchangeIcon.textContent = '↔️';
+                tradeContent.appendChild(exchangeIcon);
+                
+                // Add requested Pokémon or "any" placeholder
+                if (offer.requestedPokemonId) {
+                    const requestedPokemon = document.createElement('div');
+                    requestedPokemon.className = 'trade-pokemon requested';
+                    
+                    try {
+                        const reqPokemonResponse = await fetch(`/api/pokemon/${offer.requestedPokemonId}`);
+                        if (!reqPokemonResponse.ok) throw new Error('Failed to fetch requested Pokémon');
+                        
+                        const reqPokemonData = await reqPokemonResponse.json();
+                        requestedPokemon.innerHTML = `
+                            <div class="label">Requested</div>
+                            <img src="${reqPokemonData.image}" alt="${reqPokemonData.name}">
+                            <p>${capitalizeFirstLetter(reqPokemonData.name)}</p>
+                        `;
+                    } catch (error) {
+                        requestedPokemon.innerHTML = `
+                            <div class="label">Requested</div>
+                            <div class="placeholder">Pokémon #${offer.requestedPokemonId}</div>
+                        `;
+                    }
+                    
+                    tradeContent.appendChild(requestedPokemon);
+                } else {
+                    const anyPokemon = document.createElement('div');
+                    anyPokemon.className = 'trade-pokemon any-pokemon';
+                    anyPokemon.innerHTML = `
+                        <div class="label">Requested</div>
+                        <div class="placeholder">Any Pokémon</div>
+                    `;
+                    tradeContent.appendChild(anyPokemon);
+                }
+            } catch (error) {
+                console.error("Failed to load Pokémon for trade:", error);
+                tradeContent.innerHTML = '<p class="error">Failed to load trade Pokémon</p>';
+            }
+            
+            // Create action buttons
+            const actionButtons = document.createElement('div');
+            actionButtons.className = 'trade-actions';
+            
+            // Only show accept/reject for recipient
+            console.log("Comparing: " + offer.toUserId + " with " + currentUserId);
+            if (offer.toUserId === currentUserId && offer.status === 'pending') {
+                actionButtons.innerHTML = `
+                    <button class="accept-trade" data-trade-id="${offer._id}">Accept Trade</button>
+                    <button class="reject-trade" data-trade-id="${offer._id}">Reject</button>
+                `;
+            } else if (offer.fromUserId === currentUserId && offer.status === 'pending') {
+                // For the sender
+                actionButtons.innerHTML = '<p class="awaiting">Awaiting response...</p>';
+            } else {
+                // For completed or rejected trades
+                actionButtons.innerHTML = `<p class="trade-status">${capitalizeFirstLetter(offer.status)}</p>`;
+            }
+            
+            // Assemble the trade card
+            offerCard.appendChild(tradeDetails);
+            offerCard.appendChild(tradeContent);
+            offerCard.appendChild(actionButtons);
+            container.appendChild(offerCard);
+        }
+        
+        // Add event listeners for buttons
+        setupTradeButtonListeners();
+        
+    } catch (error) {
+        console.error("Error loading trade offers:", error);
+        const container = document.getElementById('tradeOffersContainer');
+        if (container) {
+            container.innerHTML = '<p class="error">Failed to load trade offers</p>';
+        }
+    }
+}
+
+// Add this to your JavaScript that renders trade offers
+function renderTradeOffer(offer) {
+    // ...existing code that displays the trade card...
+    
+    // Add action buttons for the recipient
+    if (offer.toUserId === currentUserId) {  // Only show buttons to the recipient
+        const actionButtons = document.createElement('div');
+        actionButtons.className = 'trade-action-buttons';
+        actionButtons.innerHTML = `
+            <button class="accept-trade" data-trade-id="${offer._id}">Accept Trade</button>
+            <button class="reject-trade" data-trade-id="${offer._id}">Reject</button>
+        `;
+        tradeCardElement.appendChild(actionButtons);
+    }
+}
+
+// Make sure you have the event listeners set up
+
+async function acceptTrade(tradeId) {
+    try {
+        const response = await fetch(`/api/trade-accept/${tradeId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        const data = await response.json();
+        if (data.success) {
+            alert('Trade accepted successfully!');
+        } else {
+            alert(`Error: ${data.message}`);
+        }
+    } catch (error) {
+        console.error('Error accepting trade:', error);
+        alert('Failed to accept trade');
+    }
+}
+
+async function rejectTrade(tradeId) {
+    try {
+        const response = await fetch(`/api/trade-reject/${tradeId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        const data = await response.json();
+        if (data.success) {
+            alert('Trade rejected');
+        } else {
+            alert(`Error: ${data.message}`);
+        }
+    } catch (error) {
+        console.error('Error rejecting trade:', error);
+        alert('Failed to reject trade');
+    }
+}
+
+// Helper function to set up event listeners for trade buttons
+function setupTradeButtonListeners() {
+    // Accept buttons
+    const acceptButtons = document.querySelectorAll('.accept-trade');
+    acceptButtons.forEach(button => {
+        button.addEventListener('click', async function() {
+            const tradeId = this.getAttribute('data-trade-id');
+            console.log("Accept button clicked for trade ID:", tradeId);
+            await acceptTrade(tradeId);
+        });
+    });
+    
+    // Reject buttons
+    const rejectButtons = document.querySelectorAll('.reject-trade');
+    rejectButtons.forEach(button => {
+        button.addEventListener('click', async function() {
+            const tradeId = this.getAttribute('data-trade-id');
+            console.log("Reject button clicked for trade ID:", tradeId);
+            await rejectTrade(tradeId);
+        });
+    });
+}
+
+// Function to accept a trade
+async function acceptTrade(tradeId) {
+    try {
+        showNotification('Processing trade...', 'info');
+        
+        console.log("Accepting trade with ID:", tradeId);
+        
+        const response = await fetch(`/api/trade-accept/${tradeId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        console.log("Trade accept response:", data);
+        
+        if (data.success) {
+            showNotification('Trade completed successfully!', 'success');
+            // Refresh the trade offers
+            await loadTradablePokemon();
+            // Refresh user's Pokémon collection
+            if (typeof loadPokemon === 'function') {
+                await loadPokemon();
+            } else {
+                await loadSavedPokemon(); // Fallback to loadSavedPokemon if loadPokemon doesn't exist
+            }
+        } else {
+            showNotification(`Failed to complete trade: ${data.message}`, 'error');
+        }
+    } catch (error) {
+        console.error("Error accepting trade:", error);
+        showNotification('Error processing trade', 'error');
+    }
+}
+
+// Function to reject a trade
+async function rejectTrade(tradeId) {
+    try {
+        showNotification('Rejecting trade...', 'info');
+        
+        const response = await fetch(`/api/trade-reject/${tradeId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification('Trade rejected', 'info');
+            // Refresh the trade offers
+            await loadTradablePokemon();
+        } else {
+            showNotification(`Failed to reject trade: ${data.message}`, 'error');
+        }
+    } catch (error) {
+        console.error("Error rejecting trade:", error);
+        showNotification('Error rejecting trade', 'error');
+    }
+}
+
+// Helper function to get current user info
+async function getCurrentUser() {
+    try {
+        const response = await fetch('/api/user');
+        if (!response.ok) return null;
+        const data = await response.json();
+        console.log("getCurrentUser() response:", data); // <-- Debug here
+        return data;
+    } catch (error) {
+        console.error("Error fetching user info:", error);
+        return null;
+    }
+}
+
+// Helper function to capitalize first letter
+function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+async function getCurrentUserId() {
+    try {
+        const response = await fetch('/api/user');
+        const data = await response.json();
+        return data.userId;
+    } catch (error) {
+        console.error('Error getting current user ID:', error);
+        return null;
+    }
+}
+
+// Function to accept a trade offer
+async function acceptTradeOffer(tradeId) {
+    try {
+        // Show loading indicator
+        showNotification('Processing trade...', 'info');
+        
+        const response = await fetch(`/api/trade-accept/${tradeId}`, {
+            method: 'POST'
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showNotification('Trade completed successfully!', 'success');
+            await loadTradablePokemon();
+        } else {
+            showNotification(`Failed to accept trade: ${result.message}`, 'error');
+        }
+    } catch (error) {
+        console.error('Error accepting trade offer:', error);
+        showNotification('Error accepting trade. Please try again.', 'error');
+    }
+}
+
+// Function to reject a trade offer
+async function rejectTradeOffer(tradeId) {
+    try {
+        // Show loading indicator
+        showNotification('Rejecting trade...', 'info');
+        
+        const response = await fetch(`/api/trade-reject/${tradeId}`, {
+            method: 'POST'
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showNotification('Trade rejected', 'info');
+            // Reload trade offers to update UI
+            await loadTradablePokemon();
+        } else {
+            showNotification(`Failed to reject trade: ${result.message}`, 'error');
+        }
+    } catch (error) {
+        console.error('Error rejecting trade offer:', error);
+        showNotification('Error rejecting trade. Please try again.', 'error');
+    }
+}
+
+// Helper function to create a Pokemon card for trade display
+async function createPokemon(pokemonId) {
+    try {
+        // First, try to fetch from your collection (should return only one matching Pokemon)
+        const response = await fetch(`/api/pokemon/${pokemonId}`);
+        if (!response.ok) throw new Error(`Failed to fetch Pokemon: ${response.statusText}`);
+        
+        const pokemonData = await response.json();
+        
+        // Create the card element
+        const card = document.createElement('div');
+        card.className = 'pokemon-card';
+        card.setAttribute('data-id', pokemonData.id);
+        
+        // Add Pokemon content
+        card.innerHTML = `
+            <div class="pokemon-image">
+                <img src="${pokemonData.image || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemonData.id}.png`}" 
+                     alt="${pokemonData.name}">
+            </div>
+            <h3>${pokemonData.name.charAt(0).toUpperCase() + pokemonData.name.slice(1)}</h3>
+            <div class="pokemon-types">
+                ${pokemonData.types.map(type => `<span class="type ${type}">${type}</span>`).join('')}
+            </div>
+        `;
+        
+        return card;
+    } catch (error) {
+        console.error('Error creating Pokemon card:', error);
+        
+        // Create a fallback card with basic info from PokéAPI
+        try {
+            const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonId}`);
+            if (!response.ok) throw new Error(`PokeAPI failed: ${response.statusText}`);
+            
+            const data = await response.json();
+            
+            const card = document.createElement('div');
+            card.className = 'pokemon-card';
+            card.setAttribute('data-id', pokemonId);
+            
+            card.innerHTML = `
+                <div class="pokemon-image">
+                    <img src="${data.sprites.front_default}" alt="${data.name}">
+                </div>
+                <h3>${data.name.charAt(0).toUpperCase() + data.name.slice(1)}</h3>
+                <div class="pokemon-types">
+                    ${data.types.map(t => `<span class="type ${t.type.name}">${t.type.name}</span>`).join('')}
+                </div>
+            `;
+            
+            return card;
+        } catch (fallbackError) {
+            console.error('Even fallback fetch failed:', fallbackError);
+            
+            // Create generic error card as last resort
+            const errorCard = document.createElement('div');
+            errorCard.className = 'pokemon-card error-card';
+            errorCard.innerHTML = `
+                <div class="pokemon-image">❓</div>
+                <h3>Pokemon #${pokemonId}</h3>
+                <div class="error-message">Failed to load</div>
+            `;
+            
+            return errorCard;
+        }
+    }
+}
 async function openMarketModal(){
+    try {
+        const sortfunction = document.getElementsByClassName('sort-controls')[0];
+        sortfunction.style.visibility = 'visible'; // Hide sort function when viewing collection
+        const response = await fetch('/api/get-pokemon');
+        const savedPokemon = await response.json();
+        
+        const container = document.getElementById('pokemonContainer');
+        container.innerHTML = ''; // Clear existing content
+        
+        savedPokemon.forEach(pokemon => {
+            const pokemonCard = createPokemonCardFromDB(pokemon);
+            container.appendChild(pokemonCard);
+        });
+        
+        console.log(`Loaded ${savedPokemon.length} Pokemon from database`);
+        
+        // Remove any catch container when viewing collection
+        const existingCatchContainer = document.querySelector('.catch-container');
+        if (existingCatchContainer) {
+            existingCatchContainer.remove();
+        }
+        
+        sortPokemon('id'); 
+    } catch (error) {
+        console.error('Error loading saved Pokemon:', error);
+    }
     try {
         const sortfunction = document.getElementsByClassName('sort-controls')[0];
         sortfunction.style.visibility = 'visible'; // Hide sort function when viewing collection
@@ -307,7 +927,13 @@ async function openMarketModal(){
                 cancelBtn.onclick = null;
 
                 confirmBtn.onclick = async () => {
-                    await putPokemonInMarket(card);
+                    let price = prompt("Enter the price for this Pokemon:");
+                    price = parseInt(price , 10);
+                    if (isNaN(price) || price <= 0) {
+                        alert("Invalid price entered. Please enter a valid number greater than 0.");
+                        return;
+                    }
+                    await putPokemonInMarket(card , price);
                     modal.classList.remove('active');
                     setTimeout(() => modal.classList.add('hidden'), 300);
                 };
@@ -320,7 +946,7 @@ async function openMarketModal(){
         });
     });
 }
-const putPokemonInMarket = async (pokemonCard) => {
+const putPokemonInMarket = async (pokemonCard , price) => {
     const pokemon = pokemonCard;
     const idelm = pokemonCard.querySelector('.pokemon-id');
     let idText = null;
@@ -337,7 +963,9 @@ const putPokemonInMarket = async (pokemonCard) => {
     
     try {
         const response = await fetch(`/api/market-pokemon/${idText}`, {
-            method: 'PUT'
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ price }) // Send price
         });
 
         console.log("Response status:", response.status);
@@ -373,20 +1001,20 @@ const getPokemonImage = async () => {
     
     // Show loading state
     loading.classList.remove('hidden');
-    summonBtn.disabled = true;
+    // summonBtn.disabled = true;
     
     try {
         const roll = Math.random() * 100;
         let i;
         
         if (roll < 0.1) {
-            const idx = ultraBeasts[Math.floor(Math.random() * ultraBeasts.length)];
-            i = idx;
-        } else if (roll < 0.15) {
             const idx = mythicalPokemon[Math.floor(Math.random() * mythicalPokemon.length)];
             i = idx;
-        } else if (roll < 0.16) {
+        } else if (roll < 0.15) {
             const idx = legendaryPokemon[Math.floor(Math.random() * legendaryPokemon.length)];
+            i = idx;
+        } else if (roll < 0.16) {
+            const idx = ultraBeasts[Math.floor(Math.random() * ultraBeasts.length)];
             i = idx;
         } else {
             do {
@@ -400,7 +1028,7 @@ const getPokemonImage = async () => {
         // Fetch Pokemon data from PokeAPI
         const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${i}`);
         const pokemonData = await response.json();
-        
+        console.log("Trying to fetch Pokemon data for ID:", i);
         // Extract the data you want to store
         const pokemonInfo = {
             pokemonName: pokemonData.name,
@@ -409,6 +1037,7 @@ const getPokemonImage = async () => {
             pokemonTypes: pokemonData.types.map(type => type.type.name)
         };
         
+        console.log("Fetched Pokemon data:", pokemonInfo);
         // Store current Pokemon globally
         currentPokemon = pokemonInfo;
         
@@ -467,10 +1096,8 @@ const getPokemonImage = async () => {
         pokemonCard.appendChild(id);
         pokemonCard.appendChild(types);
         
-        // Clear previous Pokemon and add new one
-        container.innerHTML = '';
+        container.innerHTML = ''; // Clear existing content
         container.appendChild(pokemonCard);
-        
         // Add catch container
         addCatchContainer(container);
         
@@ -495,7 +1122,7 @@ const getPokemonImage = async () => {
 
 }
 // Function to create a Pokemon card from database data
-function createPokemonCardFromDB(pokemon) {
+function createPokemonCardFromDB(pokemon, isMarket = false) {
     // Debug log to see what we're getting from the database
     console.log("Pokemon data from DB:", pokemon);
     
@@ -605,6 +1232,44 @@ function createPokemonCardFromDB(pokemon) {
     pokemonCard.appendChild(name);
     pokemonCard.appendChild(id);
     pokemonCard.appendChild(types);
+
+    // Only show price and buy button if this is for market display
+    if (pokemon.price && isMarket) {
+        const priceDiv = document.createElement('div');
+        priceDiv.className = 'pokemon-price';
+        priceDiv.textContent = `Price: ${pokemon.price} coins`;
+        const buyButton = document.createElement('button');
+        buyButton.innerText = 'Buy';
+        buyButton.className = 'buy-button';
+        priceDiv.appendChild(document.createElement('br'));
+        priceDiv.appendChild(document.createElement('br'));
+        priceDiv.appendChild(buyButton);
+        buyButton.onclick = async () => {
+            if ( userCoins < pokemon.price ) {
+                alert("You don't have enough coins to buy this Pokemon!");
+                return;
+            }
+            console.log("Sending pokemonId:", pokemonId, "type:", typeof pokemonId);
+
+            const response = await fetch(`/api/buy-pokemon/${pokemonId}`, {
+                method: 'POST'
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                alert(`You successfully bought ${pokemonName}!`);
+                userCoins -= pokemon.price;
+                updateCoinsDisplay();
+                updateCoinsInDB(userCoins); // Save the updated coins value in MongoDB
+                loadMarketPokemon();
+            }   
+            else {
+                alert(`Failed to buy ${pokemonName}: ${result.message}`);
+            }
+        };
+        pokemonCard.appendChild(priceDiv);
+    }
+
     
     return pokemonCard;
 }
@@ -673,53 +1338,55 @@ function formatBallName(ballType) {
     }
 }
 
-// Function to attempt catching the Pokemon
 function attemptCatch() {
     if (!currentPokemon || !selectedPokeball) {
         return;
     }
-    
-    // Decrease ball count
+
+    // ⛔ Don't allow if count is 0 or less
+    if (pokeballInventory[selectedPokeball] <= 0) {
+        showNotification(`No ${formatBallName(selectedPokeball)} left in inventory!`, 'error');
+        return;
+    }
+
+    // Decrease local count
     pokeballInventory[selectedPokeball]--;
     updateBallCounts();
-    
-    // Disable button during animation
+
+    // 🔁 Update MongoDB
+    updatePokeballCount(selectedPokeball, pokeballInventory[selectedPokeball]);
+
+    // Disable catch button during animation
     const catchButton = document.querySelector('.catch-button');
     catchButton.disabled = true;
-    
-    // Show catch animation
+
     showCatchAnimation(selectedPokeball);
-    
-    // Get capture probability based on Pokemon rarity and ball type
+
     const rarity = currentPokemon.rarity;
     const captureChance = captureRates[rarity][selectedPokeball];
-    
-    // Generate a fresh random number between 0 and 1 for this specific throw
     const roll = Math.random();
-    console.log(`Throw attempt with ${selectedPokeball}: Chance=${captureChance}, Roll=${roll}`);
-    
-    // Success if roll is less than capture chance
     const success = roll < captureChance;
-    
-    // Wait for animation to complete before showing result
+
+    console.log(`Throw attempt with ${selectedPokeball}: Chance=${captureChance}, Roll=${roll}`);
+
     setTimeout(() => {
         if (success) {
             catchSuccess();
         } else {
             catchFailure();
-            
+
             selectedPokeball = null;
-            
-            // Remove selected class from all pokeballs
-            document.querySelectorAll('.pokeball-item').forEach(item => {
-                item.classList.remove('selected');
-            });
+
+            document.querySelectorAll('.pokeball-item').forEach(item =>
+                item.classList.remove('selected')
+            );
         }
-        
-        // Re-enable button after catch attempt, but it will be disabled until a ball is selected again
+
         catchButton.disabled = selectedPokeball === null;
     }, 3000);
 }
+
+
 
 // Function to show catch animation
 function showCatchAnimation(ballType) {
@@ -819,6 +1486,89 @@ function showLogin() {
     document.getElementById('registerForm').style.display = 'none';
     document.getElementById('loginForm').style.display = 'block';
 }
+
+
+async function loadbuddy(){
+    try{
+        const response = await fetch('/api/buddy');
+        if(!response.ok) {
+            throw new Error(`Failed to fetch buddy: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        buddy = data.buddy || null; // Update the global `buddy` variable
+        updatebuddyinDB(Buddy);
+    }
+    catch(error){
+        console.error("Error loading buddy:",error);
+        buddy = null; // Default to no buddy if the request fails
+        updatebuddyinDB(Buddy);
+    }
+}
+
+async function updatebuddyinDB(buddy) {
+    console.log('Updating buddy in DB:', buddy);
+    try {
+        const response = await fetch('/api/update-buddy', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ buddy: buddy }),
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text(); // safely read HTML or text error
+            console.error('Failed to update buddy in DB:', errorText);
+            return;
+        }
+
+        const data = await response.json();
+        if (!data.success) {
+            console.error('Failed to update buddy in DB:', data.message);
+        }
+    } catch (error) {
+        console.error('Error updating buddy in DB:', error);
+    }
+}
+
+async function expUpdate(pokemonID, expp) {
+    // const pokemonId = pokemon.querySelector('.pokemon-id').textContent.replace('#', '');
+    console.log("Updating EXP for Pokemon ID:", pokemonID, "to", expp);
+    
+    try {
+        const response = await fetch('/api/exp-update',{
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                pokemonId: pokemonID, 
+                exp: expp 
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Failed to update EXP: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log("EXP updated successfully:", data);
+    } catch (error) {
+        console.error("Error updating EXP:", error);
+    }
+}
+
+
+
+async function getBuddyIdInt() {
+    // If buddy is not loaded, fetch it once
+    if (buddy == null) {
+        await loadbuddy();
+       
+    }
+
+    // Convert to integer
+    return buddy !== null ? parseInt(buddy, 10) : null;
+}
+
 
 async function register() {
     const username = document.getElementById('registerUsername').value;
@@ -940,8 +1690,9 @@ const loadMarketPokemon = async () => {
         const container = document.getElementById('pokemonContainer');
         container.innerHTML = ''; // Clear existing content
         
+        // For loadMarketPokemon function
         savedPokemon.forEach(pokemon => {
-            const pokemonCard = createPokemonCardFromDB(pokemon);
+            const pokemonCard = createPokemonCardFromDB(pokemon, true); // true = is market
             container.appendChild(pokemonCard);
         });
         
@@ -972,7 +1723,7 @@ const loadSavedPokemon = async () => {
         container.innerHTML = ''; // Clear existing content
         
         savedPokemon.forEach(pokemon => {
-            const pokemonCard = createPokemonCardFromDB(pokemon);
+            const pokemonCard = createPokemonCardFromDB(pokemon, false); // false = not market
             container.appendChild(pokemonCard);
         });
         
@@ -988,7 +1739,6 @@ const loadSavedPokemon = async () => {
     } catch (error) {
         console.error('Error loading saved Pokemon:', error);
     }
-   
 }
 
 //Manav
@@ -1053,24 +1803,6 @@ function closeShopModal() {
         modal.classList.add('hidden');
     }, 300);
 }
-
-// function buyPokeball(ballType, price) {
-//     if (userCoins >= price) {
-//         // Deduct coins
-//         userCoins -= price;
-//         updateCoinsDisplay();
-        
-//         // Add to inventory
-//         pokeballInventory[ballType]++;
-//         updateBallCounts();
-        
-//         // Show success message
-//         showNotification(`Successfully purchased 1 ${formatBallName(ballType)}!`, 'success');
-//     } else {
-//         // Show insufficient funds message
-//         showNotification(`Not enough coins! You need ${price - userCoins} more coins.`, 'error');
-//     }
-// }
 
 function showNotification(message, type) {
     // Create notification element if it doesn't exist
@@ -1137,6 +1869,12 @@ function catchSuccess() {
     
     // Award coins based on rarity
     const coinsEarned = awardCoinsForCatch(currentPokemon.rarity);
+
+    (async () => {
+        const buddyId = await getBuddyIdInt(); 
+        console.log("Buddy ID:", buddyId); // e.g., 77
+        expUpdate(buddyId, 20); // Award 10 EXP to the buddy
+    })();
     
     // Show success message
     const resultDiv = document.getElementById('catch-result');
@@ -1188,27 +1926,6 @@ function updateBallCounts() {
     }
 }
 
-// Function to clear all Pokemon
-function clearAllPokemon() {
-    const pokemonContainer = document.getElementById('pokemonContainer');
-    pokemonContainer.innerHTML = '';
-    
-    // Clear local storage if you're storing Pokemon there
-    localStorage.removeItem('savedPokemon');
-    
-    // Optionally display a message
-    const message = document.createElement('p');
-    message.textContent = 'All Pokemon have been cleared!';
-    message.className = 'clear-message';
-    pokemonContainer.appendChild(message);
-    
-    // Remove the message after 3 seconds
-    setTimeout(() => {
-        if (pokemonContainer.contains(message)) {
-            pokemonContainer.removeChild(message);
-        }
-    }, 3000);
-}
 
 // Initialize event listeners when document loads
 document.addEventListener('DOMContentLoaded', async function () {
@@ -1310,3 +2027,34 @@ function applyCardTiltEffect(card) {
         this.style.transform = 'perspective(1000px) rotateX(0) rotateY(0)';
     });
 }
+
+// Inject Raid launcher button (optional integration)
+document.addEventListener('DOMContentLoaded', () => {
+    injectRaidLauncher();
+});
+
+function injectRaidLauncher() {
+    const controlsHost = document.querySelector('.controls') || document.getElementById('gameContainer');
+    if (!controlsHost) return;
+    if (document.getElementById('raidLaunchBtn')) return;
+    const btn = document.createElement('button');
+    btn.id = 'raidLaunchBtn';
+    btn.textContent = 'Raid Battle';
+    btn.style.background = 'linear-gradient(45deg,#7038F8,#a371ff)';
+    btn.addEventListener('click', () => {
+        // Open battle simulator with raid UI (team selection happens there)
+        window.open('trail.html#raid', '_blank');
+    });
+    controlsHost.appendChild(btn);
+}
+
+(function addRaidOpenButton(){
+    const host = document.querySelector('.controls') || document.body;
+    if (!host || document.getElementById('openRaidBtn')) return;
+    const btn = document.createElement('button');
+    btn.id = 'openRaidBtn';
+    btn.textContent = 'Open Raid Battles';
+    btn.style.background = 'linear-gradient(45deg,#7038F8,#a371ff)';
+    btn.addEventListener('click', ()=> window.open('trail.html#raid','_blank'));
+    host.appendChild(btn);
+})();

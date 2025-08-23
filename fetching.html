@@ -48,6 +48,7 @@
                 <button id="marketPokemon" onclick="openMarketModal()">Market</button>
                 <button id="buddy" onclick="Buddy()">Buddy</button>
                 <button id="loadMarketPokemon" onclick="loadMarketPokemon()">Load Market</button>
+                <button id="loadTradePokemon" onclick="loadTradablePokemon()">Load Trade</button>
                 <button id="logOut" onclick="logout()">Logout</button>
             </div>
             <div class="sort-controls">
@@ -61,6 +62,20 @@
             <div id="loading" class="loading hidden">Summoning Pokemon...</div>
             <div id="pokemonContainer" class="pokemon-container"></div>
         </div>
+        
+        <!-- Trade section -->
+        <div class="trade-section">
+            <h2>Pokémon Trading Center</h2>
+            <div class="trade-controls">
+                <button id="offerTradeBtn" class="trade-btn">Offer New Trade</button>
+                <button id="refreshTradesBtn" class="trade-btn">Refresh Trades</button>
+            </div>
+            <div id="tradeOffersContainer">
+                <!-- Trade offers will be dynamically inserted here -->
+                <p class="loading-trades">Loading trade offers...</p>
+            </div>
+        </div>
+        
         <!-- Add Pokéballs inventory -->
         <div class="pokeballs-inventory">
             <div class="pokeball-item" onclick="selectPokeball('pokeball')">
@@ -80,10 +95,26 @@
                 <span id="masterball-count">1</span>
             </div>
         </div>
-
     </div>
 
-    <script src="script.js"></script>
+    <!-- Modals -->
+    <div id="marketConfirmModal" class="modal hidden">
+        <div class="modal-content">
+            <h2>Market Pokemon</h2>
+            <p id="marketConfirmText"></p>
+            <button id="confirmMarketBtn">Market</button>
+            <button id="cancelMarketBtn">Cancel</button>
+        </div>
+    </div>
+
+    <div id="tradeConfirmModal" class="modal hidden">
+        <div class="modal-content">
+            <h2>Trade Pokémon</h2>
+            <p id="tradeConfirmText"></p>
+            <button id="confirmTradeBtn">Yes, Trade</button>
+            <button id="cancelTradeBtn">Cancel</button>
+        </div>
+    </div>
 
     <!-- Shop Modal -->
     <div id="shopModal" class="modal hidden">
@@ -132,25 +163,7 @@
             </div>
         </div>
     </div>
-</div>
-<!-- Change this in fetching.html -->
-<div id="marketConfirmModal" class="modal hidden">
-    <div class="modal-content">
-        <h2>Market Pokemon</h2>
-        <p id="marketConfirmText"></p>
-        <button id="confirmMarketBtn">Market</button>
-        <button id="cancelMarketBtn">Cancel</button> <!-- Changed from cancelTradeBtn -->
-    </div>
-</div>
 
-<div id="tradeConfirmModal" class="modal hidden">
-    <div class="modal-content">
-        <h2>Trade Pokémon</h2>
-        <p id="tradeConfirmText"></p>
-        <button id="confirmTradeBtn" onclick="removePokemon()">Yes, Trade</button>
-        <button id="cancelTradeBtn">Cancel</button>
-    </div>
-</div>
-
+    <script src="script.js"></script>
 </body>
 </html>
