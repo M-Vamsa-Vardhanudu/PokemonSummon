@@ -1714,6 +1714,7 @@ const loadMarketPokemon = async () => {
 // Function to load saved Pokemon from database
 const loadSavedPokemon = async () => {
     try {
+        
         const sortfunction = document.getElementsByClassName('sort-controls')[0];
         sortfunction.style.visibility = 'visible'; // Hide sort function when viewing collection
         const response = await fetch('/api/get-pokemon');
