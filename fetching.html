@@ -8,42 +8,60 @@
     <link rel="stylesheet" href="card-tilt.css">
 </head>
 <body>
-    <div id="authContainer" style="margin-bottom: 20px;">
-        <div id="loginForm">
-            <h3>Login</h3>
-            <input type="text" id="loginUsername" placeholder="Username" />
-            <input type="password" id="loginPassword" placeholder="Password" />
-            <button onclick="login()">Login</button>
-            <p>Don't have an account? <button onclick="showRegister()">Register</button></p>
-        </div>
-        
-        <div id="registerForm" style="display: none;">
-            <h3>Register</h3>
-            <input type="text" id="registerUsername" placeholder="Username" />
-            <input type="password" id="registerPassword" placeholder="Password" />
-            <button onclick="register()">Register</button>
-            <p>Already have an account? <button onclick="showLogin()">Login</button></p>
-        </div>
-    </div>
 
-    <div id="gameContainer" style="display: none;">
-        <div id="userInfo" style="display:none; margin-bottom: 20px;">
-            <span>Logged in as: <strong id="currentUser"></strong></span>
-        </div>
+    <div class="container">
         <div class="coins-display">
             <img src="PokeCoin.webp" alt="Coins" class="coins-icon">
-            <span id="userCoins">500</span> coins
+            <span id="userCoins">500</span>
         </div>
-        
-        
-        <div class="container">
-            <h1>🎮 Pokemon Summoner</h1>
+
+        <div id="authContainer">
+            <h3 id="authTitle">Login</h3>
+            <div id="loginForm">
+                <input type="text" id="loginUsername" placeholder="Username" />
+                <input type="password" id="loginPassword" placeholder="Password" />
+                <button onclick="login()">Login</button>
+                <p>Don't have an account? <button class="link-btn" onclick="showRegister()">Register</button></p>
+            </div>
+            
+            <div id="registerForm" class="hidden">
+                <input type="text" id="registerUsername" placeholder="Username" />
+                <input type="password" id="registerPassword" placeholder="Password" />
+                <button onclick="register()">Register</button>
+                <p>Already have an account? <button class="link-btn" onclick="showLogin()">Login</button></p>
+            </div>
+        </div>
+
+        <div id="gameContainer" class="hidden">
+            <div id="userInfo" style="margin-bottom: 20px;">
+                <span>Logged in as: <strong id="currentUser"></strong></span>
+            </div>
+
+            <h1>Pokemon Summoner</h1>
+
+            <div class="pokeballs-inventory">
+                <div class="pokeball-item" data-ball="pokeball" onclick="selectPokeball('pokeball')">
+                    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" alt="Poké Ball">
+                    <span id="pokeball-count">10</span>
+                </div>
+                <div class="pokeball-item" data-ball="greatball" onclick="selectPokeball('greatball')">
+                    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/great-ball.png" alt="Great Ball">
+                    <span id="greatball-count">5</span>
+                </div>
+                <div class="pokeball-item" data-ball="ultraball" onclick="selectPokeball('ultraball')">
+                    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ultra-ball.png" alt="Ultra Ball">
+                    <span id="ultraball-count">3</span>
+                </div>
+                <div class="pokeball-item" data-ball="masterball" onclick="selectPokeball('masterball')">
+                    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/master-ball.png" alt="Master Ball">
+                    <span id="masterball-count">1</span>
+                </div>
+            </div>
+            
             <div class="controls">
                 <button id="summonBtn" onclick="getPokemonImage()">Summon Pokemon</button>
                 <button id="loadBtn" onclick="loadSavedPokemon()">Load Saved</button>
                 <button id="shopBtn" onclick="openShopModal()">Shop</button>
-                <!-- <button id="clearBtn" onclick="clearAllPokemon()">Clear All</button> -->
-                <!-- <button id="toggleDisplayBtn" onclick="togglePokemonDisplay()">Hide Pokemon</button> -->
                 <button id="tradePokemon" onclick="openTradeModal()">Trade</button>
                 <button id="marketPokemon" onclick="openMarketModal()">Market</button>
                 <button id="buddy" onclick="Buddy()">Buddy</button>
@@ -51,6 +69,7 @@
                 <button id="loadTradePokemon" onclick="loadTradablePokemon()">Load Trade</button>
                 <button id="logOut" onclick="logout()">Logout</button>
             </div>
+
             <div class="sort-controls">
                 <label for="sortSelect">Sort by:</label>
                 <select id="sortSelect" class="sort-select">
@@ -59,11 +78,11 @@
                     <option value="rarity">Rarity</option>
                 </select>
             </div>
+            
             <div id="loading" class="loading hidden">Summoning Pokemon...</div>
             <div id="pokemonContainer" class="pokemon-container"></div>
         </div>
-        
-        <!-- Trade section -->
+
         <div class="trade-section">
             <h2>Pokémon Trading Center</h2>
             <div class="trade-controls">
@@ -71,33 +90,11 @@
                 <button id="refreshTradesBtn" class="trade-btn">Refresh Trades</button>
             </div>
             <div id="tradeOffersContainer">
-                <!-- Trade offers will be dynamically inserted here -->
                 <p class="loading-trades">Loading trade offers...</p>
-            </div>
-        </div>
-        
-        <!-- Add Pokéballs inventory -->
-        <div class="pokeballs-inventory">
-            <div class="pokeball-item" onclick="selectPokeball('pokeball')">
-                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" alt="Poké Ball">
-                <span id="pokeball-count">10</span>
-            </div>
-            <div class="pokeball-item" onclick="selectPokeball('greatball')">
-                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/great-ball.png" alt="Great Ball">
-                <span id="greatball-count">5</span>
-            </div>
-            <div class="pokeball-item" onclick="selectPokeball('ultraball')">
-                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ultra-ball.png" alt="Ultra Ball">
-                <span id="ultraball-count">3</span>
-            </div>
-            <div class="pokeball-item" onclick="selectPokeball('masterball')">
-                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/master-ball.png" alt="Master Ball">
-                <span id="masterball-count">1</span>
             </div>
         </div>
     </div>
 
-    <!-- Modals -->
     <div id="marketConfirmModal" class="modal hidden">
         <div class="modal-content">
             <h2>Market Pokemon</h2>
@@ -116,7 +113,6 @@
         </div>
     </div>
 
-    <!-- Shop Modal -->
     <div id="shopModal" class="modal hidden">
         <div class="modal-content">
             <div class="modal-header">
@@ -164,6 +160,26 @@
         </div>
     </div>
 
+    <div class="catch-animation hidden" id="catchAnimation">
+        <img id="catchPokeball" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" alt="Catching animation">
+    </div>
+
+    <div id="notification" class="notification hidden"></div>
+
     <script src="script.js"></script>
+    <script>
+        
+        function showRegister() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('registerForm').classList.remove('hidden');
+            document.getElementById('authTitle').textContent = 'Register';
+        }
+
+        function showLogin() {
+            document.getElementById('registerForm').classList.add('hidden');
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('authTitle').textContent = 'Login';
+        }
+    </script>
 </body>
 </html>
